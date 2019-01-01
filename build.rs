@@ -35,7 +35,11 @@ struct Card {
     level: u8,
     color: Color,
     point: u8,
-    cost: Map<String, Value>,
+    cost_black: u8,
+    cost_white: u8,
+    cost_red: u8,
+    cost_blue: u8,
+    cost_green: u8,
 }
 
 //fn parse_json(data: &str) -> Result<String, failure::Error> {
@@ -64,24 +68,21 @@ fn main() {
                     "level": 1,
                     "color": "Black",
                     "point": 0,
-                    "cost":  {
-                        "Black": 0,
-                        "White": 1,
-                        "Red": 1,
-                        "Blue": 1,
-                        "Green": 1
-                    }
+                    "cost_black": 0,
+                    "cost_white": 0,
+                    "cost_red": 0,
+                    "cost_blue": 0,
+                    "cost_green": 0
                   }"#;
 
     let card: Card = serde_json::from_str(data).unwrap();
-    println!("{:?}", card);
 
-    //let json = format!("{{\"nodes\": {} }}", std::str::from_utf8(&json).unwrap());
+    // let json = format!("{{\"nodes\": {} }}", std::str::from_utf8(&card).unwrap());
 
     // let parsed_str = parse_json(&json).unwrap();
 
     //let result = format!("{}{}];", BOILERPLATE, parsed_str);
 
-    // let mut f = File::create(&*CREATED_FILE_PATH).unwrap();
-    //j:println!wkk:write!  f.write_all(result.as_bytes()).unwrap();
+    //    let mut f = File::create(&*CREATED_FILE_PATH).unwrap();
+    //   f.write_all(json.as_bytes()).unwrap();
 }

@@ -1,0 +1,7 @@
+{ "level": 1, "color": "Black", "point": 0, "cost_black": 0, "cost_white": 1, "cost_red": 1, "cost_blue": 1, "cost_green": 1 }
+{ "level": 1, "color": "Black", "point": 0, "cost_black": 0, "cost_white": 0, "cost_red": 1, "cost_blue": 0, "cost_green": 2 }
+{ "level": 1, "color": "Black", "point": 0, "cost_black": 0, "cost_white": 2, "cost_red": 0, "cost_blue": 0, "cost_green": 2 }
+{ "level": 1, "color": "Black", "point": 0, "cost_black": 1, "cost_white": 0, "cost_red": 3, "cost_blue": 0, "cost_green": 1 }
+{ "level": 1, "color": "Black", "point": 0, "cost_black": 0, "cost_white": 0, "cost_red": 0, "cost_blue": 0, "cost_green": 3 }
+{ "level": 1, "color": "Black", "point": 0, "cost_black": 0, "cost_white": 1, "cost_red": 1, "cost_blue": 2, "cost_green": 1 }
+{ "level": 1, "color": "Black", "point": 0, "cost_black": 0, "cost_white": 2, "cost_red": 1, "cost_blue": 2, "cost_green": 0 }
