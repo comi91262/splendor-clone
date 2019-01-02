@@ -51,8 +51,8 @@ impl User {
     fn _get_id(&self) -> u8 {
         self.id
     }
-    pub fn get_number_of_tokens(&self, color: &Color) -> u8 {
-        let stack = self.token_stack.get(color).unwrap();
+    pub fn get_number_of_tokens(&self, color: Color) -> u8 {
+        let stack = self.token_stack.get(&color).unwrap();
         stack.len() as u8
     }
     pub fn add_to_hands(&mut self, card: Card) {
@@ -69,26 +69,26 @@ impl User {
         stack.push(token);
     }
     pub fn pay(&mut self, card: &Card) {
-        self.pay_every_token(card, &Color::Black);
-        self.pay_every_token(card, &Color::White);
-        self.pay_every_token(card, &Color::Red);
-        self.pay_every_token(card, &Color::Blue);
-        self.pay_every_token(card, &Color::Green);
+        self.pay_every_token(card, Color::Black);
+        self.pay_every_token(card, Color::White);
+        self.pay_every_token(card, Color::Red);
+        self.pay_every_token(card, Color::Blue);
+        self.pay_every_token(card, Color::Green);
     }
 
-    fn pay_every_token(&mut self, card: &Card, color: &Color) {
-        let cost = card.get_cost(&color);
-        let token = self.get_number_of_tokens(&color);
+    fn pay_every_token(&mut self, card: &Card, color: Color) {
+        let cost = card.get_cost(color);
+        let token = self.get_number_of_tokens(color);
         if token > cost {
             self.sub_token(color, cost);
         } else {
             self.sub_token(color, token);
-            self.sub_token(&Color::Gold, cost - token);
+            self.sub_token(Color::Gold, cost - token);
         }
     }
 
-    fn sub_token(&mut self, color: &Color, cost: u8) {
-        let stack = self.token_stack.get_mut(color).unwrap();
+    fn sub_token(&mut self, color: Color, cost: u8) {
+        let stack = self.token_stack.get_mut(&color).unwrap();
         for _ in 0..cost {
             stack.pop();
         }

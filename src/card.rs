@@ -30,12 +30,12 @@ impl Default for Card {
 
 impl Card {
     pub fn is_available(&self, user: &User) -> bool {
-        let black_token = user.get_number_of_tokens(&Color::Black);
-        let white_token = user.get_number_of_tokens(&Color::White);
-        let red_token = user.get_number_of_tokens(&Color::Red);
-        let blue_token = user.get_number_of_tokens(&Color::Blue);
-        let green_token = user.get_number_of_tokens(&Color::Green);
-        let mut gold_token = user.get_number_of_tokens(&Color::Gold) as i8;
+        let black_token = user.get_number_of_tokens(Color::Black);
+        let white_token = user.get_number_of_tokens(Color::White);
+        let red_token = user.get_number_of_tokens(Color::Red);
+        let blue_token = user.get_number_of_tokens(Color::Blue);
+        let green_token = user.get_number_of_tokens(Color::Green);
+        let mut gold_token = user.get_number_of_tokens(Color::Gold) as i8;
 
         self.estimate_gold_token(black_token, self.cost_black, &mut gold_token);
         self.estimate_gold_token(white_token, self.cost_white, &mut gold_token);
@@ -46,14 +46,14 @@ impl Card {
         gold_token > 0
     }
 
-    pub fn get_cost(&self, color: &Color) -> u8 {
+    pub fn get_cost(&self, color: Color) -> u8 {
         match color {
             Color::Black => self.cost_black,
             Color::White => self.cost_white,
             Color::Red => self.cost_red,
             Color::Blue => self.cost_blue,
             Color::Green => self.cost_green,
-            Color::Gold => unreachable!()
+            Color::Gold => unreachable!(),
         }
     }
 

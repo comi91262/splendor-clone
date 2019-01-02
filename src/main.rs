@@ -76,24 +76,40 @@ fn buy_development_card(x: u8, y: u8, user: &mut User, board: &mut Board) -> Str
                 String::from("トークンが足りません")
             }
         }
-        None => {
-            String::from("そこにはカードがありません")
-        },
+        None => String::from("そこにはカードがありません"),
     }
 }
 
-fn hoge_pickup_token(color: Color, user: &mut User, board: &mut Board) -> String {
-    String::from("pickup2")
+fn select_two_same_tokens(color: Color, user: &mut User, board: &mut Board) -> String {
+    if board.can_get_token(color) {
+        for _ in 0..2 {
+            let token = board.uget_token(color);
+            user.add_token(token);
+        }
+    }
+    String::from("OK")
 }
 
-fn hoge_pickup_token2(
+fn select_three_tokens(
     color1: Color,
     color2: Color,
     color3: Color,
     user: &mut User,
     board: &mut Board,
 ) -> String {
-    String::from("pickup3")
+    match board.get_token(color1) {
+        Some(token) => user.add_token(token),
+        None => (),
+    }
+    match board.get_token(color2) {
+        Some(token) => user.add_token(token),
+        None => (),
+    }
+    match board.get_token(color3) {
+        Some(token) => user.add_token(token),
+        None => (),
+    }
+    String::from("OK")
 }
 fn eval(s: &str, user: &mut User, board: &mut Board) -> String {
     let output = match s {
@@ -121,21 +137,21 @@ fn eval(s: &str, user: &mut User, board: &mut Board) -> String {
         "22" => buy_development_card(2, 1, user, board),
         "23" => buy_development_card(2, 2, user, board),
         "24" => buy_development_card(2, 3, user, board),
-        "25" => hoge_pickup_token(Color::White, user, board),
-        "26" => hoge_pickup_token(Color::Black, user, board),
-        "27" => hoge_pickup_token(Color::Red, user, board),
-        "28" => hoge_pickup_token(Color::Blue, user, board),
-        "29" => hoge_pickup_token(Color::Green, user, board),
-        "30" => hoge_pickup_token2(Color::Black, Color::White, Color::Red, user, board),
-        "31" => hoge_pickup_token2(Color::Black, Color::White, Color::Blue, user, board),
-        "32" => hoge_pickup_token2(Color::Black, Color::White, Color::Green, user, board),
-        "33" => hoge_pickup_token2(Color::Black, Color::Red, Color::Blue, user, board),
-        "34" => hoge_pickup_token2(Color::Black, Color::Red, Color::Green, user, board),
-        "35" => hoge_pickup_token2(Color::Black, Color::Blue, Color::Green, user, board),
-        "36" => hoge_pickup_token2(Color::White, Color::Red, Color::Blue, user, board),
-        "37" => hoge_pickup_token2(Color::White, Color::Red, Color::Green, user, board),
-        "38" => hoge_pickup_token2(Color::White, Color::Blue, Color::Green, user, board),
-        "39" => hoge_pickup_token2(Color::Red, Color::Blue, Color::Green, user, board),
+        "25" => select_two_same_tokens(Color::White, user, board),
+        "26" => select_two_same_tokens(Color::Black, user, board),
+        "27" => select_two_same_tokens(Color::Red, user, board),
+        "28" => select_two_same_tokens(Color::Blue, user, board),
+        "29" => select_two_same_tokens(Color::Green, user, board),
+        "30" => select_three_tokens(Color::Black, Color::White, Color::Red, user, board),
+        "31" => select_three_tokens(Color::Black, Color::White, Color::Blue, user, board),
+        "32" => select_three_tokens(Color::Black, Color::White, Color::Green, user, board),
+        "33" => select_three_tokens(Color::Black, Color::Red, Color::Blue, user, board),
+        "34" => select_three_tokens(Color::Black, Color::Red, Color::Green, user, board),
+        "35" => select_three_tokens(Color::Black, Color::Blue, Color::Green, user, board),
+        "36" => select_three_tokens(Color::White, Color::Red, Color::Blue, user, board),
+        "37" => select_three_tokens(Color::White, Color::Red, Color::Green, user, board),
+        "38" => select_three_tokens(Color::White, Color::Blue, Color::Green, user, board),
+        "39" => select_three_tokens(Color::Red, Color::Blue, Color::Green, user, board),
         _ => String::from(""),
     };
 
@@ -166,11 +182,3 @@ fn main() {
         print(&result, &user);
     }
 }
-
-// - カードの購入
-//     - Cost < 手持ちのトークン+カードのColar
-//
-// - トークンの確保
-//     - 違う色3枚
-//     - 残りトークンが0枚のトークンからは取得出来ない
-//     - 4枚以上のトークンから2枚取得

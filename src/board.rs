@@ -8,6 +8,8 @@ use std::fs::File;
 // use std::io::Write;
 use std::io::{BufRead, BufReader};
 
+const LIMIT_OF_GETTING_SAME_TOKEN: u8 = 4;
+
 pub struct Board {
     board: Array2<Card>,
     level1_stack: Vec<Card>,
@@ -74,12 +76,21 @@ impl Board {
         let card = self.level1_stack.pop().unwrap();
         self.board[[x as usize, y as usize]] = card;
     }
-
     pub fn get_token(&mut self, color: Color) -> Option<Token> {
         let stack = self.token_stack.get_mut(&color).unwrap();
         stack.pop()
     }
-
+    pub fn uget_token(&mut self, color: Color) -> Token {
+        let stack = self.token_stack.get_mut(&color).unwrap();
+        stack.pop().unwrap()
+    }
+    pub fn can_get_token(&self, color: Color) -> bool {
+        self.get_number_of_tokens(color) >= LIMIT_OF_GETTING_SAME_TOKEN
+    }
+    fn get_number_of_tokens(&self, color: Color) -> u8 {
+        let stack = self.token_stack.get(&color).unwrap();
+        stack.len() as u8
+    }
     fn refill(&mut self, x: u8, y: u8, level: u8) {
         match level {
             1 => match self.level1_stack.pop() {
