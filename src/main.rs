@@ -139,6 +139,7 @@ fn main() {
     board.drop_card(2, 0);
     board.drop_card(2, 1);
     board.drop_card(2, 2);
+    board.drop_card(2, 3);
 
     // init user
     let mut user: User = Default::default();

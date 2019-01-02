@@ -87,7 +87,10 @@ impl Board {
     fn refill(&mut self, x: u8, y: u8, level: u8) {
         match level {
             1 => {
-                self.board[[x as usize, y as usize]] = self.level1_stack.pop().unwrap();
+                match self.level1_stack.pop() {
+                    Some(card) => self.board[[x as usize, y as usize]] = card,
+                    None => ()
+                }
             }
             _ => unreachable!(),
         }
