@@ -12,6 +12,7 @@ pub mod color;
 pub mod token;
 mod user;
 
+use std::process;
 use crate::board::Board;
 use crate::color::Color;
 use crate::user::User;
@@ -162,6 +163,12 @@ fn print(result: &str, user: &User) -> () {
     println!("結果: {}", result);
     println!("ユーザーステータス: {:?}", user);
 }
+
+fn is_over(user: &User) -> bool {
+    // TODO magic number
+    user.get_vp() >= 15
+}
+
 fn main() {
     let mut board: Board = Default::default();
     board.create();
@@ -179,6 +186,10 @@ fn main() {
         println!("{}", GUIDE.to_string());
         let command: String = read();
         let result = eval(&command, &mut user, &mut board);
+        if is_over(&user) {
+            print(&"end", &user);
+            process::exit(1);
+        }
         print(&result, &user);
     }
 }

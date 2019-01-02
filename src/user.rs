@@ -42,7 +42,7 @@ impl User {
             .insert(Color::Gold, Token::create_stack(Color::Gold));
     }
 
-    fn _get_vp(&self) -> u8 {
+    pub fn get_vp(&self) -> u8 {
         self.vp
     }
     fn _set_vp(&mut self, vp: u8) {
