@@ -59,6 +59,7 @@ impl User {
         self.hand.push(card);
     }
     pub fn obtain(&mut self, card: Card) {
+        self.vp += card.get_point();
         self.acquired_card.push(card);
     }
     pub fn is_over_capacity_of_hand(&self) -> bool {

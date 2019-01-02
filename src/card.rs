@@ -29,6 +29,9 @@ impl Default for Card {
 }
 
 impl Card {
+    pub fn get_point(&self) -> u8 {
+        self.point
+    }
     pub fn is_available(&self, user: &User) -> bool {
         let black_token = user.get_number_of_tokens(Color::Black);
         let white_token = user.get_number_of_tokens(Color::White);
