@@ -1,7 +1,5 @@
 // use std::collections::hash_map::DefaultHasher;
 // use std::hash::{Hash, Hasher};
-
-use ndarray::Array2;
 extern crate serde;
 extern crate serde_json;
 #[macro_use]
@@ -10,10 +8,14 @@ extern crate serde_derive;
 #[macro_use]
 extern crate lazy_static;
 
-use std::fs::File;
-// use std::io::Write;
+mod board;
+pub mod card;
+pub mod color;
+pub mod token;
+mod user;
 
-use std::io::{BufRead, BufReader};
+use crate::board::Board;
+use crate::user::User;
 
 lazy_static! {
     static ref CREATED_FILE_PATH: String = {
@@ -21,114 +23,6 @@ lazy_static! {
         let file_path = "card.json";
         format!("{}/{}", working_directory, file_path)
     };
-}
-
-#[derive(Debug)]
-struct User {
-    id: u8,
-    hand: Vec<Card>,
-    aquired_card: Vec<Card>
-    vp: u8,
-    black_token: u8,
-    white_token: u8,
-    red_token: u8,
-    blue_token: u8,
-    green_token: u8,
-    gold_token: u8,
-}
-
-impl Default for User {
-    fn default() -> Self {
-        User {
-            id: 1,
-            vp: 0,
-            hand: vec![],
-            black_token: 0,
-            white_token: 0,
-            red_token: 0,
-            blue_token: 0,
-            green_token: 0,
-            gold_token: 0,
-        }
-    }
-}
-
-impl User {
-    fn _get_vp(&self) -> u8 {
-        self.vp
-    }
-    fn _get_id(&self) -> u8 {
-        self.id
-    }
-    fn _set_vp(&mut self, vp: u8) {
-        self.vp = vp
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-enum Color {
-    Black,
-    White,
-    Red,
-    Blue,
-    Green,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct Card {
-    level: u8,
-    color: Color,
-    point: u8,
-    cost_black: u8,
-    cost_white: u8,
-    cost_red: u8,
-    cost_blue: u8,
-    cost_green: u8,
-}
-
-
-impl Default for Card {
-    fn default() -> Self {
-        Card {
-            level: 0,
-            color: Color::Black,
-            point: 0,
-            cost_black: 0,
-            cost_white: 0,
-            cost_red: 0,
-            cost_blue: 0,
-            cost_green: 0,
-        }
-    }
-}
-
-fn check(card: &Card, user: &User) -> bool {
-    if card.cost_black != user.black_token {
-        return false;
-    }
-
-    if card.cost_white != user.white_token {
-        return false;
-    }
-
-    if card.cost_red != user.red_token {
-        return false;
-    }
-
-    if card.cost_blue != user.blue_token {
-        return false;
-    }
-
-    if card.cost_green != user.green_token {
-        return false;
-    }
-
-    return true;
-}
-
-
-struct Token {
-    color: Color,
 }
 
 const GUIDE: &'static str = "
@@ -154,58 +48,92 @@ fn eval(s: &str) -> () {
 fn print() -> () {
     println!("{}", GUIDE.to_string());
 }
+// 上述記事中のUserRepository相当
+// pub trait UserDao {/* ... */}
+// 上述記事中のUserRepositoryComponent相当
+// pub trait HaveUserDao {
+//   type UserDao: UserDao;
+//   fn user_dao(&self) -> Self::UserDao;
+// }
+// 上述記事中のUserService相当
+// trait UserService: HaveUserDao {
+//   pub fn get_user_by_id(&self, id: i32) -> Result<Option<User>> {
+//     self.user_service().find_user(id)
+//   }
+// }
+// UserServiceはHaveUserDaoにのみ依存するのでそれさえ実装していれば自動で実装を与えられます。
+// もちろんテストなどで挙動を上書きしたければ具体的な型での実装で上書きできます。
+// impl<T:HaveUserDao> UserService for T {}
+
+// 上述記事中のUserServiceComponent相当
+// trait HaveUserService {
+//   type UserService: UserService;
+//   fn user_service(&self) -> Self::UserService;
+// }
+// struct Server {
+//   user_dao: UserPgDao,
+//   group_dao: GroupPgDao,
+// }
+
+// impl HaveUserDao for Server {
+//   type UserDao = UserPgDao;
+//   fn user_dao(&self) -> Self::UserDao {
+//     &self.user_dao
+//   }
+// }
+// impl HaveUserService for Server{
+//   type UserService = Self;
+//   fn user_service(&self) -> Self::UserService {
+//     self
+//   }
+// }
 
 fn main() {
-    let mut board = Array2::<Card>::default((3, 4));
-    let mut level1_stack = vec![];
-    let mut black_token_stack =  vec![];
+    let mut board: Board = Default::default();
+    board.create();
 
-    black_token_stack.push(Token{color: Color::Black});
-    black_token_stack.push(Token{color: Color::Black});
-    black_token_stack.push(Token{color: Color::Black});
-    black_token_stack.push(Token{color: Color::Black});
-    black_token_stack.push(Token{color: Color::Black});
+    // let mut black_token_stack = vec![];
 
-    for result in BufReader::new(File::open("card.json").unwrap()).lines() {
-        let l = result.unwrap();
-        let card: Card = serde_json::from_str(&l).unwrap();
+    // black_token_stack.push(Token {
+    //     color: Color::Black,
+    // });
+    // black_token_stack.push(Token {
+    //     color: Color::Black,
+    // });
+    // black_token_stack.push(Token {
+    //     color: Color::Black,
+    // });
+    // black_token_stack.push(Token {
+    //     color: Color::Black,
+    // });
+    // black_token_stack.push(Token {
+    //     color: Color::Black,
+    // });
 
-        match card {
-            Card { level: 1, .. } => level1_stack.push(card),
-            Card { level: _, .. } => (),
-        }
-    }
-
-    board[[2, 0]] = level1_stack.pop().unwrap();
-    board[[2, 1]] = level1_stack.pop().unwrap();
-    board[[2, 2]] = level1_stack.pop().unwrap();
+    board.drop_card(2, 0);
+    board.drop_card(2, 1);
+    board.drop_card(2, 2);
 
     // init user
-    let mut u = User {
-        id: 1,
-        ..Default::default()
-    };
+    let mut user: User = Default::default();
 
     // if
-    let _ = check(&board[[2, 0]], &u);
-    let card = board[[2, 0]].clone();
+    let tokens = user.get_tokens();
+    let card = board.get_card(2, 0);
+    card.is_available(tokens.0, tokens.1, tokens.2, tokens.3, tokens.4);
 
-    u.hand.push(card);
-
-
-    board[[2, 0]] = level1_stack.pop().unwrap();
+    user.obtain(card.clone());
+    board.drop_card(2, 0);
 
     //println!("{}", GUIDE.to_string());
 
     // トークンの確保
-    
 
     //loop {
     //    let command: String = read();
     //    let result = eval(&command);
     //    print();
     //}
-
 }
 
 // - カードの確保
