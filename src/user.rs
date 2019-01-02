@@ -12,12 +12,6 @@ pub struct User {
     acquired_card: Vec<Card>,
     vp: u8,
     token_stack: HashMap<Color, Vec<Token>>,
-    black_token: u8,
-    white_token: u8,
-    red_token: u8,
-    blue_token: u8,
-    green_token: u8,
-    gold_token: u8,
 }
 
 impl Default for User {
@@ -28,12 +22,6 @@ impl Default for User {
             hand: vec![],
             acquired_card: vec![],
             token_stack: HashMap::new(),
-            black_token: 0,
-            white_token: 0,
-            red_token: 0,
-            blue_token: 0,
-            green_token: 0,
-            gold_token: 0,
         }
     }
 }
@@ -63,14 +51,9 @@ impl User {
     fn _get_id(&self) -> u8 {
         self.id
     }
-    pub fn get_tokens(&self) -> (u8, u8, u8, u8, u8) {
-        (
-            self.black_token,
-            self.white_token,
-            self.red_token,
-            self.blue_token,
-            self.green_token,
-        )
+    pub fn get_number_of_tokens(&self, color: &Color) -> u8 {
+        let stack = self.token_stack.get(color).unwrap();
+        stack.len() as u8
     }
     pub fn add_to_hands(&mut self, card: Card) {
         self.hand.push(card);
@@ -84,5 +67,30 @@ impl User {
     pub fn add_token(&mut self, token: Token) {
         let stack = self.token_stack.get_mut(&token.get_color()).unwrap();
         stack.push(token);
+    }
+    pub fn pay(&mut self, card: &Card) {
+        self.pay_every_token(card, &Color::Black);
+        self.pay_every_token(card, &Color::White);
+        self.pay_every_token(card, &Color::Red);
+        self.pay_every_token(card, &Color::Blue);
+        self.pay_every_token(card, &Color::Green);
+    }
+
+    fn pay_every_token(&mut self, card: &Card, color: &Color) {
+        let cost = card.get_cost(&color);
+        let token = self.get_number_of_tokens(&color);
+        if token > cost {
+            self.sub_token(color, cost);
+        } else {
+            self.sub_token(color, token);
+            self.sub_token(&Color::Gold, cost - token);
+        }
+    }
+
+    fn sub_token(&mut self, color: &Color, cost: u8) {
+        let stack = self.token_stack.get_mut(color).unwrap();
+        for _ in 0..cost {
+            stack.pop();
+        }
     }
 }

@@ -12,12 +12,6 @@ pub struct Board {
     board: Array2<Card>,
     level1_stack: Vec<Card>,
     token_stack: HashMap<Color, Vec<Token>>,
-    black_token_stack: Vec<Token>,
-    white_token_stack: Vec<Token>,
-    red_token_stack: Vec<Token>,
-    blue_token_stack: Vec<Token>,
-    green_token_stack: Vec<Token>,
-    gold_token_stack: Vec<Token>,
 }
 
 impl Default for Board {
@@ -26,17 +20,14 @@ impl Default for Board {
             board: Array2::<Card>::default((3, 4)),
             level1_stack: vec![],
             token_stack: HashMap::new(),
-            white_token_stack: vec![],
-            black_token_stack: vec![],
-            red_token_stack: vec![],
-            blue_token_stack: vec![],
-            green_token_stack: vec![],
-            gold_token_stack: vec![],
         }
     }
 }
 
 impl Board {
+    pub fn peek_card(&self, x: u8, y: u8) -> Option<&Card> {
+        self.board.get((x as usize, y as usize))
+    }
     pub fn get_card(&mut self, x: u8, y: u8) -> Option<Card> {
         match self.board.get_mut((x as usize, y as usize)) {
             Some(card) => {
@@ -47,7 +38,12 @@ impl Board {
             None => None,
         }
     }
-
+    pub fn uget_card(&mut self, x: u8, y: u8) -> Card {
+        let card = self.board.get_mut((x as usize, y as usize)).unwrap();
+        let card2 = card.clone();
+        self.refill(x, y, 1);
+        card2
+    }
     pub fn create(&mut self) {
         for result in BufReader::new(File::open("card.json").unwrap()).lines() {
             let l = result.unwrap();
@@ -80,18 +76,16 @@ impl Board {
     }
 
     pub fn get_token(&mut self, color: Color) -> Option<Token> {
-        let mut stack = self.token_stack.get_mut(&color).unwrap();
+        let stack = self.token_stack.get_mut(&color).unwrap();
         stack.pop()
     }
 
     fn refill(&mut self, x: u8, y: u8, level: u8) {
         match level {
-            1 => {
-                match self.level1_stack.pop() {
-                    Some(card) => self.board[[x as usize, y as usize]] = card,
-                    None => ()
-                }
-            }
+            1 => match self.level1_stack.pop() {
+                Some(card) => self.board[[x as usize, y as usize]] = card,
+                None => (),
+            },
             _ => unreachable!(),
         }
     }

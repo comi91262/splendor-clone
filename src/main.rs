@@ -64,8 +64,22 @@ fn hoge_obtain(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
         String::from("OK")
     }
 }
-fn hoge_pickup(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
-    String::from("pickup")
+fn buy_development_card(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
+    match board.peek_card(x, y) {
+        Some(card) => {
+            if card.is_available(&user) {
+                user.pay(&card);
+                let card = board.uget_card(x, y);
+                user.obtain(card);
+                String::from("OK")
+            } else {
+                String::from("トークンが足りません")
+            }
+        }
+        None => {
+            String::from("そこにはカードがありません")
+        },
+    }
 }
 
 fn hoge_pickup_token(color: Color, user: &mut User, board: &mut Board) -> String {
@@ -95,18 +109,18 @@ fn eval(s: &str, user: &mut User, board: &mut Board) -> String {
         "10" => hoge_obtain(2, 1, user, board),
         "11" => hoge_obtain(2, 2, user, board),
         "12" => hoge_obtain(2, 3, user, board),
-        "13" => hoge_pickup(0, 0, user, board),
-        "14" => hoge_pickup(0, 1, user, board),
-        "15" => hoge_pickup(0, 2, user, board),
-        "16" => hoge_pickup(0, 3, user, board),
-        "17" => hoge_pickup(1, 0, user, board),
-        "18" => hoge_pickup(1, 1, user, board),
-        "19" => hoge_pickup(1, 2, user, board),
-        "20" => hoge_pickup(1, 3, user, board),
-        "21" => hoge_pickup(2, 0, user, board),
-        "22" => hoge_pickup(2, 1, user, board),
-        "23" => hoge_pickup(2, 2, user, board),
-        "24" => hoge_pickup(2, 3, user, board),
+        "13" => buy_development_card(0, 0, user, board),
+        "14" => buy_development_card(0, 1, user, board),
+        "15" => buy_development_card(0, 2, user, board),
+        "16" => buy_development_card(0, 3, user, board),
+        "17" => buy_development_card(1, 0, user, board),
+        "18" => buy_development_card(1, 1, user, board),
+        "19" => buy_development_card(1, 2, user, board),
+        "20" => buy_development_card(1, 3, user, board),
+        "21" => buy_development_card(2, 0, user, board),
+        "22" => buy_development_card(2, 1, user, board),
+        "23" => buy_development_card(2, 2, user, board),
+        "24" => buy_development_card(2, 3, user, board),
         "25" => hoge_pickup_token(Color::White, user, board),
         "26" => hoge_pickup_token(Color::Black, user, board),
         "27" => hoge_pickup_token(Color::Red, user, board),
@@ -144,14 +158,6 @@ fn main() {
     // init user
     let mut user: User = Default::default();
     user.create();
-
-    // if
-    // let tokens = user.get_tokens();
-    // let card = board.get_card(2, 0);
-    // card.is_available(tokens.0, tokens.1, tokens.2, tokens.3, tokens.4);
-
-    // user.obtain(card.clone());
-    // board.drop_card(2, 0);
 
     loop {
         println!("{}", GUIDE.to_string());

@@ -1,4 +1,5 @@
 use crate::color::Color;
+use crate::user::User;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Card {
@@ -28,34 +29,38 @@ impl Default for Card {
 }
 
 impl Card {
-    pub fn is_available(
-        &self,
-        black_token: u8,
-        white_token: u8,
-        red_token: u8,
-        blue_token: u8,
-        green_token: u8,
-    ) -> bool {
-        if self.cost_black != black_token {
-            return false;
-        }
+    pub fn is_available(&self, user: &User) -> bool {
+        let black_token = user.get_number_of_tokens(&Color::Black);
+        let white_token = user.get_number_of_tokens(&Color::White);
+        let red_token = user.get_number_of_tokens(&Color::Red);
+        let blue_token = user.get_number_of_tokens(&Color::Blue);
+        let green_token = user.get_number_of_tokens(&Color::Green);
+        let mut gold_token = user.get_number_of_tokens(&Color::Gold) as i8;
 
-        if self.cost_white != white_token {
-            return false;
-        }
+        self.estimate_gold_token(black_token, self.cost_black, &mut gold_token);
+        self.estimate_gold_token(white_token, self.cost_white, &mut gold_token);
+        self.estimate_gold_token(red_token, self.cost_red, &mut gold_token);
+        self.estimate_gold_token(blue_token, self.cost_blue, &mut gold_token);
+        self.estimate_gold_token(green_token, self.cost_green, &mut gold_token);
 
-        if self.cost_red != red_token {
-            return false;
-        }
+        gold_token > 0
+    }
 
-        if self.cost_blue != blue_token {
-            return false;
+    pub fn get_cost(&self, color: &Color) -> u8 {
+        match color {
+            Color::Black => self.cost_black,
+            Color::White => self.cost_white,
+            Color::Red => self.cost_red,
+            Color::Blue => self.cost_blue,
+            Color::Green => self.cost_green,
+            Color::Gold => unreachable!()
         }
+    }
 
-        if self.cost_green != green_token {
-            return false;
+    fn estimate_gold_token(&self, user_token: u8, card_cost: u8, gold_token: &mut i8) {
+        if user_token < card_cost {
+            let diff = card_cost - user_token;
+            *gold_token -= diff as i8;
         }
-
-        return true;
     }
 }
