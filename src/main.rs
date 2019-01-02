@@ -47,91 +47,94 @@ fn read<T: std::str::FromStr>() -> T {
     s.trim().parse().ok().unwrap()
 }
 
-fn hoge_obtain(x: u8, y: u8) -> String {
-    String::from("obtain")
+fn hoge_obtain(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
+    if user.is_over_capacity_of_hand() {
+        String::from("手札がいっぱいです")
+    } else {
+        match board.get_card(x, y) {
+            Some(card) => {
+                user.add_to_hands(card);
+                match board.get_token(Color::Gold) {
+                    Some(token) => user.add_token(token),
+                    None => (),
+                }
+            }
+            None => (),
+        }
+        String::from("OK")
+    }
 }
-fn hoge_pickup(x: u8, y: u8) -> String {
+fn hoge_pickup(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
     String::from("pickup")
 }
 
-fn hoge_pickup_token(color: Color) -> String {
+fn hoge_pickup_token(color: Color, user: &mut User, board: &mut Board) -> String {
     String::from("pickup2")
 }
 
-fn hoge_pickup_token2(color1: Color, color2: Color, color3: Color) -> String {
+fn hoge_pickup_token2(
+    color1: Color,
+    color2: Color,
+    color3: Color,
+    user: &mut User,
+    board: &mut Board,
+) -> String {
     String::from("pickup3")
 }
-fn eval(s: &str) -> String {
+fn eval(s: &str, user: &mut User, board: &mut Board) -> String {
     let output = match s {
-        "1" => hoge_obtain(0, 0),
-        "2" => hoge_obtain(0, 1),
-        "3" => hoge_obtain(0, 2),
-        "4" => hoge_obtain(0, 3),
-        "5" => hoge_obtain(1, 0),
-        "6" => hoge_obtain(1, 1),
-        "7" => hoge_obtain(1, 2),
-        "8" => hoge_obtain(1, 3),
-        "9" => hoge_obtain(2, 0),
-        "10" => hoge_obtain(2, 1),
-        "11" => hoge_obtain(2, 2),
-        "12" => hoge_obtain(2, 3),
-        "13" => hoge_pickup(0, 0),
-        "14" => hoge_pickup(0, 1),
-        "15" => hoge_pickup(0, 2),
-        "16" => hoge_pickup(0, 3),
-        "17" => hoge_pickup(1, 0),
-        "18" => hoge_pickup(1, 1),
-        "19" => hoge_pickup(1, 2),
-        "20" => hoge_pickup(1, 3),
-        "21" => hoge_pickup(2, 0),
-        "22" => hoge_pickup(2, 1),
-        "23" => hoge_pickup(2, 2),
-        "24" => hoge_pickup(2, 3),
-        "25" => hoge_pickup_token(Color::White),
-        "26" => hoge_pickup_token(Color::Black),
-        "27" => hoge_pickup_token(Color::Red),
-        "28" => hoge_pickup_token(Color::Blue),
-        "29" => hoge_pickup_token(Color::Green),
-        "30" => hoge_pickup_token2(Color::Black, Color::White, Color::Red),
-        "31" => hoge_pickup_token2(Color::Black, Color::White, Color::Blue),
-        "32" => hoge_pickup_token2(Color::Black, Color::White, Color::Green),
-        "33" => hoge_pickup_token2(Color::Black, Color::Red, Color::Blue),
-        "34" => hoge_pickup_token2(Color::Black, Color::Red, Color::Green),
-        "35" => hoge_pickup_token2(Color::Black, Color::Blue, Color::Green),
-        "36" => hoge_pickup_token2(Color::White, Color::Red, Color::Blue),
-        "37" => hoge_pickup_token2(Color::White, Color::Red, Color::Green),
-        "38" => hoge_pickup_token2(Color::White, Color::Blue, Color::Green),
-        "39" => hoge_pickup_token2(Color::Red, Color::Blue, Color::Green),
+        "1" => hoge_obtain(0, 0, user, board),
+        "2" => hoge_obtain(0, 1, user, board),
+        "3" => hoge_obtain(0, 2, user, board),
+        "4" => hoge_obtain(0, 3, user, board),
+        "5" => hoge_obtain(1, 0, user, board),
+        "6" => hoge_obtain(1, 1, user, board),
+        "7" => hoge_obtain(1, 2, user, board),
+        "8" => hoge_obtain(1, 3, user, board),
+        "9" => hoge_obtain(2, 0, user, board),
+        "10" => hoge_obtain(2, 1, user, board),
+        "11" => hoge_obtain(2, 2, user, board),
+        "12" => hoge_obtain(2, 3, user, board),
+        "13" => hoge_pickup(0, 0, user, board),
+        "14" => hoge_pickup(0, 1, user, board),
+        "15" => hoge_pickup(0, 2, user, board),
+        "16" => hoge_pickup(0, 3, user, board),
+        "17" => hoge_pickup(1, 0, user, board),
+        "18" => hoge_pickup(1, 1, user, board),
+        "19" => hoge_pickup(1, 2, user, board),
+        "20" => hoge_pickup(1, 3, user, board),
+        "21" => hoge_pickup(2, 0, user, board),
+        "22" => hoge_pickup(2, 1, user, board),
+        "23" => hoge_pickup(2, 2, user, board),
+        "24" => hoge_pickup(2, 3, user, board),
+        "25" => hoge_pickup_token(Color::White, user, board),
+        "26" => hoge_pickup_token(Color::Black, user, board),
+        "27" => hoge_pickup_token(Color::Red, user, board),
+        "28" => hoge_pickup_token(Color::Blue, user, board),
+        "29" => hoge_pickup_token(Color::Green, user, board),
+        "30" => hoge_pickup_token2(Color::Black, Color::White, Color::Red, user, board),
+        "31" => hoge_pickup_token2(Color::Black, Color::White, Color::Blue, user, board),
+        "32" => hoge_pickup_token2(Color::Black, Color::White, Color::Green, user, board),
+        "33" => hoge_pickup_token2(Color::Black, Color::Red, Color::Blue, user, board),
+        "34" => hoge_pickup_token2(Color::Black, Color::Red, Color::Green, user, board),
+        "35" => hoge_pickup_token2(Color::Black, Color::Blue, Color::Green, user, board),
+        "36" => hoge_pickup_token2(Color::White, Color::Red, Color::Blue, user, board),
+        "37" => hoge_pickup_token2(Color::White, Color::Red, Color::Green, user, board),
+        "38" => hoge_pickup_token2(Color::White, Color::Blue, Color::Green, user, board),
+        "39" => hoge_pickup_token2(Color::Red, Color::Blue, Color::Green, user, board),
         _ => String::from(""),
     };
 
     output
 }
 
-fn print() -> () {
-    println!("{}", GUIDE.to_string());
+fn print(result: &str, user: &User) -> () {
+    println!("結果: {}", result);
+    println!("ユーザーステータス: {:?}", user);
 }
 fn main() {
     let mut board: Board = Default::default();
     board.create();
-
-    // let mut black_token_stack = vec![];
-
-    // black_token_stack.push(Token {
-    //     color: Color::Black,
-    // });
-    // black_token_stack.push(Token {
-    //     color: Color::Black,
-    // });
-    // black_token_stack.push(Token {
-    //     color: Color::Black,
-    // });
-    // black_token_stack.push(Token {
-    //     color: Color::Black,
-    // });
-    // black_token_stack.push(Token {
-    //     color: Color::Black,
-    // });
 
     board.drop_card(2, 0);
     board.drop_card(2, 1);
@@ -139,31 +142,24 @@ fn main() {
 
     // init user
     let mut user: User = Default::default();
+    user.create();
 
     // if
-    let tokens = user.get_tokens();
-    let card = board.get_card(2, 0);
-    card.is_available(tokens.0, tokens.1, tokens.2, tokens.3, tokens.4);
+    // let tokens = user.get_tokens();
+    // let card = board.get_card(2, 0);
+    // card.is_available(tokens.0, tokens.1, tokens.2, tokens.3, tokens.4);
 
-    user.obtain(card.clone());
-    board.drop_card(2, 0);
-
-    //println!("{}", GUIDE.to_string());
-
-    // トークンの確保
+    // user.obtain(card.clone());
+    // board.drop_card(2, 0);
 
     loop {
+        println!("{}", GUIDE.to_string());
         let command: String = read();
-        let result = eval(&command);
-        print();
+        let result = eval(&command, &mut user, &mut board);
+        print(&result, &user);
     }
 }
 
-// - カードの確保
-//     - ３枚まで
-//     - 黄金トークンを取得
-//          - 5枚まで
-//
 // - カードの購入
 //     - Cost < 手持ちのトークン+カードのColar
 //
