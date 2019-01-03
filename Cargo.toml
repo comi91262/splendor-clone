@@ -3,7 +3,6 @@ name = "splendor-clone"
 version = "0.1.0"
 authors = ["ykonomi"]
 edition = "2018"
-build = "build.rs"
 
 [dependencies]
 serde = "1.0"

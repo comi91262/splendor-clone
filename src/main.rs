@@ -12,10 +12,10 @@ pub mod color;
 pub mod token;
 mod user;
 
-use std::process;
 use crate::board::Board;
 use crate::color::Color;
 use crate::user::User;
+use std::process;
 
 lazy_static! {
     static ref CREATED_FILE_PATH: String = {
@@ -173,14 +173,12 @@ fn main() {
     let mut board: Board = Default::default();
     board.create();
 
-    board.drop_card(2, 0);
-    board.drop_card(2, 1);
-    board.drop_card(2, 2);
-    board.drop_card(2, 3);
-
     // init user
     let mut user: User = Default::default();
     user.create();
+
+    println!("{:}", board);
+    //println!("{:?}", user);
 
     loop {
         println!("{}", GUIDE.to_string());
