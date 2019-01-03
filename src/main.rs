@@ -6,12 +6,13 @@ extern crate serde_derive;
 #[macro_use]
 extern crate lazy_static;
 
-mod board;
+pub mod board;
 pub mod card;
 pub mod color;
+mod game;
 pub mod level;
 pub mod token;
-mod user;
+pub mod user;
 
 use crate::board::Board;
 use crate::color::Color;
@@ -52,90 +53,9 @@ fn read<T: std::str::FromStr>() -> T {
     s.trim().parse().ok().unwrap()
 }
 
-fn reserve_development_card(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
-    if user.is_over_capacity_of_hand() {
-        String::from("手札がいっぱいです")
-    } else {
-        match board.get_card(x, y) {
-            Some(card) => {
-                user.add_to_hands(card);
-                match board.get_token(Color::Gold) {
-                    Some(token) => user.add_token(token),
-                    None => (),
-                }
-            }
-            None => (),
-        }
-        String::from("OK")
-    }
-}
-fn buy_development_card(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
-    match board.peek_card(x, y) {
-        Some(card) => {
-            if card.is_available(&user) {
-                user.pay(&card);
-                let card = board.uget_card(x, y);
-                user.obtain(card);
-                String::from("OK")
-            } else {
-                String::from("トークンが足りません")
-            }
-        }
-        None => String::from("そこにはカードがありません"),
-    }
-}
-
-fn select_two_same_tokens(color: Color, user: &mut User, board: &mut Board) -> String {
-    if board.can_get_token(color) {
-        for _ in 0..2 {
-            let token = board.uget_token(color);
-            user.add_token(token);
-        }
-    }
-    String::from("OK")
-}
-
-fn select_three_tokens(
-    color1: Color,
-    color2: Color,
-    color3: Color,
-    user: &mut User,
-    board: &mut Board,
-) -> String {
-    match board.get_token(color1) {
-        Some(token) => user.add_token(token),
-        None => (),
-    }
-    match board.get_token(color2) {
-        Some(token) => user.add_token(token),
-        None => (),
-    }
-    match board.get_token(color3) {
-        Some(token) => user.add_token(token),
-        None => (),
-    }
-    String::from("OK")
-}
-
-fn reserve_stack_card(level: Level, user: &mut User, board: &mut Board) -> String {
-    if user.is_over_capacity_of_hand() {
-        String::from("手札がいっぱいです")
-    } else {
-        match board.get_stack_card(level) {
-            Some(card) => {
-                user.add_to_hands(card);
-                match board.get_token(Color::Gold) {
-                    Some(token) => user.add_token(token),
-                    None => (),
-                }
-            }
-            None => ()
-        }
-        String::from("OK")
-    }
-}
-
 fn eval(s: &str, user: &mut User, board: &mut Board) -> String {
+    use crate::game::*;
+
     let output = match s {
         "1" => reserve_development_card(0, 0, user, board),
         "2" => reserve_development_card(0, 1, user, board),
@@ -196,12 +116,8 @@ fn is_over(user: &User) -> bool {
 }
 
 fn main() {
-    let mut board: Board = Default::default();
-    board.create();
-
-    // init user
-    let mut user: User = Default::default();
-    user.create();
+    let mut board = Board::create();
+    let mut user = User::create();
 
     println!("{:}", board);
     //println!("{:?}", user);

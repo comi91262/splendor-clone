@@ -7,7 +7,6 @@ use std::fmt;
 
 use std::collections::HashMap;
 use std::fs::File;
-// use std::io::Write;
 use std::io::{BufRead, BufReader};
 
 const LIMIT_OF_GETTING_SAME_TOKEN: u8 = 4;
@@ -15,22 +14,8 @@ const LIMIT_OF_GETTING_SAME_TOKEN: u8 = 4;
 #[derive(Debug)]
 pub struct Board {
     board: Array2<Card>,
-    level1_stack: Vec<Card>,
-    level2_stack: Vec<Card>,
-    level3_stack: Vec<Card>,
+    stack: HashMap<Level, Vec<Card>>,
     token_stack: HashMap<Color, Vec<Token>>,
-}
-
-impl Default for Board {
-    fn default() -> Board {
-        Board {
-            board: Array2::<Card>::default((3, 4)),
-            level1_stack: vec![],
-            level2_stack: vec![],
-            level3_stack: vec![],
-            token_stack: HashMap::new(),
-        }
-    }
 }
 
 impl fmt::Display for Board {
@@ -42,14 +27,66 @@ impl fmt::Display for Board {
 レベル2 残り残数: {:?}
 レベル1 残り残数: {:?}
         ",
-            self.level3_stack.len(),
-            self.level2_stack.len(),
-            self.level1_stack.len()
+            self.stack.get(&Level::One).unwrap().len(),
+            self.stack.get(&Level::Two).unwrap().len(),
+            self.stack.get(&Level::Three).unwrap().len()
         )
     }
 }
 
 impl Board {
+    pub fn create() -> Board {
+        let mut board = Board {
+            board: Array2::<Card>::default((3, 4)),
+            stack: HashMap::new(),
+            token_stack: HashMap::new(),
+        };
+        for result in BufReader::new(File::open("card.json").unwrap()).lines() {
+            let l = result.unwrap();
+            let card: Card = serde_json::from_str(&l).unwrap();
+
+            match card {
+                Card { level: 1, .. } => board.stack.get_mut(&Level::One).unwrap().push(card),
+                Card { level: 2, .. } => board.stack.get_mut(&Level::One).unwrap().push(card),
+                Card { level: 3, .. } => board.stack.get_mut(&Level::One).unwrap().push(card),
+                Card { level: _, .. } => unreachable!(),
+            }
+        }
+
+        board.refill(0, 0);
+        board.refill(0, 1);
+        board.refill(0, 2);
+        board.refill(0, 3);
+        board.refill(1, 0);
+        board.refill(1, 1);
+        board.refill(1, 2);
+        board.refill(1, 3);
+        board.refill(2, 0);
+        board.refill(2, 1);
+        board.refill(2, 2);
+        board.refill(2, 3);
+
+        board
+            .token_stack
+            .insert(Color::Black, Token::create_stack(Color::Black));
+        board
+            .token_stack
+            .insert(Color::White, Token::create_stack(Color::White));
+        board
+            .token_stack
+            .insert(Color::Red, Token::create_stack(Color::Red));
+        board
+            .token_stack
+            .insert(Color::Blue, Token::create_stack(Color::Blue));
+        board
+            .token_stack
+            .insert(Color::Green, Token::create_stack(Color::Green));
+        board
+            .token_stack
+            .insert(Color::Gold, Token::create_stack(Color::Gold));
+
+        board
+    }
     pub fn peek_card(&self, x: u8, y: u8) -> Option<&Card> {
         self.board.get((x as usize, y as usize))
     }
@@ -57,69 +94,20 @@ impl Board {
         match self.board.get_mut((x as usize, y as usize)) {
             Some(card) => {
                 let card2 = card.clone();
-                self.refill(x, y, 1);
+                self.refill(x, y);
                 Some(card2)
             }
             None => None,
         }
     }
     pub fn get_stack_card(&mut self, level: Level) -> Option<Card> {
-        match level {
-            Level::One => {
-                self.level1_stack.pop()
-            }
-            Level::Two => {
-                self.level2_stack.pop()
-            }
-            Level::Three => {
-                self.level3_stack.pop()
-            }
-        }
+        self.stack.get_mut(&level).unwrap().pop()
     }
     pub fn uget_card(&mut self, x: u8, y: u8) -> Card {
         let card = self.board.get_mut((x as usize, y as usize)).unwrap();
         let card2 = card.clone();
-        self.refill(x, y, 1);
+        self.refill(x, y);
         card2
-    }
-    pub fn create(&mut self) {
-        for result in BufReader::new(File::open("card.json").unwrap()).lines() {
-            let l = result.unwrap();
-            let card: Card = serde_json::from_str(&l).unwrap();
-
-            match card {
-                Card { level: 1, .. } => self.level1_stack.push(card),
-                Card { level: 2, .. } => self.level2_stack.push(card),
-                Card { level: 3, .. } => self.level3_stack.push(card),
-                Card { level: _, .. } => unreachable!(),
-            }
-        }
-
-        self.refill(0, 0, 3);
-        self.refill(0, 1, 3);
-        self.refill(0, 2, 3);
-        self.refill(0, 3, 3);
-        self.refill(1, 0, 2);
-        self.refill(1, 1, 2);
-        self.refill(1, 2, 2);
-        self.refill(1, 3, 2);
-        self.refill(2, 0, 3);
-        self.refill(2, 1, 3);
-        self.refill(2, 2, 3);
-        self.refill(2, 3, 3);
-
-        self.token_stack
-            .insert(Color::Black, Token::create_stack(Color::Black));
-        self.token_stack
-            .insert(Color::White, Token::create_stack(Color::White));
-        self.token_stack
-            .insert(Color::Red, Token::create_stack(Color::Red));
-        self.token_stack
-            .insert(Color::Blue, Token::create_stack(Color::Blue));
-        self.token_stack
-            .insert(Color::Green, Token::create_stack(Color::Green));
-        self.token_stack
-            .insert(Color::Gold, Token::create_stack(Color::Gold));
     }
     pub fn get_token(&mut self, color: Color) -> Option<Token> {
         let stack = self.token_stack.get_mut(&color).unwrap();
@@ -136,23 +124,17 @@ impl Board {
         let stack = self.token_stack.get(&color).unwrap();
         stack.len() as u8
     }
-    fn refill(&mut self, x: u8, y: u8, level: u8) {
-        // TODO boader
-        match level {
-            1 => match self.level1_stack.pop() {
-                Some(card) => self.board[[x as usize, y as usize]] = card,
-                None => (),
-            },
-            2 => match self.level2_stack.pop() {
-                Some(card) => self.board[[x as usize, y as usize]] = card,
-                None => (),
-            },
-            3 => match self.level3_stack.pop() {
-                Some(card) => self.board[[x as usize, y as usize]] = card,
-                None => (),
-            },
+    fn refill(&mut self, x: u8, y: u8) {
+        let stack = match x {
+            0 => self.stack.get_mut(&Level::Three).unwrap(),
+            1 => self.stack.get_mut(&Level::Two).unwrap(),
+            2 => self.stack.get_mut(&Level::One).unwrap(),
             _ => unreachable!(),
+        };
+
+        match stack.pop() {
+            Some(card) => self.board[[x as usize, y as usize]] = card,
+            None => (),
         }
     }
-
 }

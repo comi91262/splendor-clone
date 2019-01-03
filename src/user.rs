@@ -13,33 +13,29 @@ pub struct User {
     vp: u8,
     token_stack: HashMap<Color, Vec<Token>>,
 }
-
-impl Default for User {
-    fn default() -> Self {
-        User {
+impl User {
+    pub fn create() -> User {
+        let mut user = User {
             id: 1,
             vp: 0,
             hand: vec![],
             acquired_card: vec![],
             token_stack: HashMap::new(),
-        }
-    }
-}
-
-impl User {
-    pub fn create(&mut self) {
-        self.token_stack
+        };
+        user.token_stack
             .insert(Color::Black, Token::create_stack(Color::Black));
-        self.token_stack
+        user.token_stack
             .insert(Color::White, Token::create_stack(Color::White));
-        self.token_stack
+        user.token_stack
             .insert(Color::Red, Token::create_stack(Color::Red));
-        self.token_stack
+        user.token_stack
             .insert(Color::Blue, Token::create_stack(Color::Blue));
-        self.token_stack
+        user.token_stack
             .insert(Color::Green, Token::create_stack(Color::Green));
-        self.token_stack
+        user.token_stack
             .insert(Color::Gold, Token::create_stack(Color::Gold));
+
+        user
     }
 
     pub fn get_vp(&self) -> u8 {
