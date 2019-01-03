@@ -3,14 +3,12 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
-#[macro_use]
-extern crate lazy_static;
-
 pub mod board;
 pub mod card;
 pub mod color;
 mod game;
 pub mod level;
+pub mod noble_tile;
 pub mod token;
 pub mod user;
 
@@ -19,14 +17,6 @@ use crate::color::Color;
 use crate::level::Level;
 use crate::user::User;
 use std::process;
-
-lazy_static! {
-    static ref CREATED_FILE_PATH: String = {
-        let working_directory = env!("CARGO_MANIFEST_DIR");
-        let file_path = "card.json";
-        format!("{}/{}", working_directory, file_path)
-    };
-}
 
 const GUIDE: &'static str = "
 1). 0, 0 カードの確保 2). 0, 1 カードの確保 3). 0, 2 カードの確保 4). 0, 3 カードの確保

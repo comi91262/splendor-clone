@@ -1,7 +1,9 @@
 use crate::card::Card;
 use crate::color::Color;
 use crate::level::Level;
+use crate::noble_tile::NobleTile;
 use crate::token::Token;
+
 use ndarray::Array2;
 use std::fmt;
 
@@ -16,6 +18,7 @@ pub struct Board {
     board: Array2<Card>,
     stack: HashMap<Level, Vec<Card>>,
     token_stack: HashMap<Color, Vec<Token>>,
+    noble_tile: Vec<NobleTile>,
 }
 
 impl fmt::Display for Board {
@@ -40,6 +43,7 @@ impl Board {
             board: Array2::<Card>::default((3, 4)),
             stack: HashMap::new(),
             token_stack: HashMap::new(),
+            noble_tile: vec![],
         };
         for result in BufReader::new(File::open("card.json").unwrap()).lines() {
             let l = result.unwrap();
@@ -84,6 +88,8 @@ impl Board {
         board
             .token_stack
             .insert(Color::Gold, Token::create_stack(Color::Gold));
+
+        board.noble_tile = NobleTile::create_stack();
 
         board
     }
