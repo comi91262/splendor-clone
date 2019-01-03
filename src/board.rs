@@ -1,5 +1,6 @@
 use crate::card::Card;
 use crate::color::Color;
+use crate::level::Level;
 use crate::token::Token;
 use ndarray::Array2;
 use std::fmt;
@@ -60,6 +61,19 @@ impl Board {
                 Some(card2)
             }
             None => None,
+        }
+    }
+    pub fn get_stack_card(&mut self, level: Level) -> Option<Card> {
+        match level {
+            Level::One => {
+                self.level1_stack.pop()
+            }
+            Level::Two => {
+                self.level2_stack.pop()
+            }
+            Level::Three => {
+                self.level3_stack.pop()
+            }
         }
     }
     pub fn uget_card(&mut self, x: u8, y: u8) -> Card {
@@ -140,4 +154,5 @@ impl Board {
             _ => unreachable!(),
         }
     }
+
 }

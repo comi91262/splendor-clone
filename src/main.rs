@@ -9,11 +9,13 @@ extern crate lazy_static;
 mod board;
 pub mod card;
 pub mod color;
+pub mod level;
 pub mod token;
 mod user;
 
 use crate::board::Board;
 use crate::color::Color;
+use crate::level::Level;
 use crate::user::User;
 use std::process;
 
@@ -40,6 +42,8 @@ const GUIDE: &'static str = "
 30). 黒,白,赤トークン獲得 31). 黒,白,青トークン獲得 32). 黒,白,緑トークン獲得 33). 黒,赤,青トークン獲得
 34). 黒,赤,緑トークン獲得 35). 黒,青,緑トークン獲得 36). 白,赤,青トークン獲得 37). 白,赤,緑トークン獲得
 38). 白,青,緑トークン獲得 39). 赤,青,緑トークン獲得
+
+40). レベル1 カードの確保 41). レベル2 カードの確保 42). レベル3 カードの確保
 ";
 
 fn read<T: std::str::FromStr>() -> T {
@@ -48,7 +52,7 @@ fn read<T: std::str::FromStr>() -> T {
     s.trim().parse().ok().unwrap()
 }
 
-fn hoge_obtain(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
+fn reserve_development_card(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
     if user.is_over_capacity_of_hand() {
         String::from("手札がいっぱいです")
     } else {
@@ -112,20 +116,39 @@ fn select_three_tokens(
     }
     String::from("OK")
 }
+
+fn reserve_stack_card(level: Level, user: &mut User, board: &mut Board) -> String {
+    if user.is_over_capacity_of_hand() {
+        String::from("手札がいっぱいです")
+    } else {
+        match board.get_stack_card(level) {
+            Some(card) => {
+                user.add_to_hands(card);
+                match board.get_token(Color::Gold) {
+                    Some(token) => user.add_token(token),
+                    None => (),
+                }
+            }
+            None => ()
+        }
+        String::from("OK")
+    }
+}
+
 fn eval(s: &str, user: &mut User, board: &mut Board) -> String {
     let output = match s {
-        "1" => hoge_obtain(0, 0, user, board),
-        "2" => hoge_obtain(0, 1, user, board),
-        "3" => hoge_obtain(0, 2, user, board),
-        "4" => hoge_obtain(0, 3, user, board),
-        "5" => hoge_obtain(1, 0, user, board),
-        "6" => hoge_obtain(1, 1, user, board),
-        "7" => hoge_obtain(1, 2, user, board),
-        "8" => hoge_obtain(1, 3, user, board),
-        "9" => hoge_obtain(2, 0, user, board),
-        "10" => hoge_obtain(2, 1, user, board),
-        "11" => hoge_obtain(2, 2, user, board),
-        "12" => hoge_obtain(2, 3, user, board),
+        "1" => reserve_development_card(0, 0, user, board),
+        "2" => reserve_development_card(0, 1, user, board),
+        "3" => reserve_development_card(0, 2, user, board),
+        "4" => reserve_development_card(0, 3, user, board),
+        "5" => reserve_development_card(1, 0, user, board),
+        "6" => reserve_development_card(1, 1, user, board),
+        "7" => reserve_development_card(1, 2, user, board),
+        "8" => reserve_development_card(1, 3, user, board),
+        "9" => reserve_development_card(2, 0, user, board),
+        "10" => reserve_development_card(2, 1, user, board),
+        "11" => reserve_development_card(2, 2, user, board),
+        "12" => reserve_development_card(2, 3, user, board),
         "13" => buy_development_card(0, 0, user, board),
         "14" => buy_development_card(0, 1, user, board),
         "15" => buy_development_card(0, 2, user, board),
@@ -153,6 +176,9 @@ fn eval(s: &str, user: &mut User, board: &mut Board) -> String {
         "37" => select_three_tokens(Color::White, Color::Red, Color::Green, user, board),
         "38" => select_three_tokens(Color::White, Color::Blue, Color::Green, user, board),
         "39" => select_three_tokens(Color::Red, Color::Blue, Color::Green, user, board),
+        "40" => reserve_stack_card(Level::One, user, board),
+        "41" => reserve_stack_card(Level::Two, user, board),
+        "42" => reserve_stack_card(Level::Three, user, board),
         _ => String::from(""),
     };
 
