@@ -3,7 +3,76 @@ use crate::color::Color;
 use crate::level::Level;
 use crate::user::User;
 
-pub fn reserve_development_card(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
+use rand::rngs::ThreadRng;
+use rand::Rng;
+
+pub fn read(rng: &mut ThreadRng) -> u8 {
+    rng.gen::<u8>() % 42 + 1
+}
+
+pub fn eval(input: u8, user: &mut User, board: &mut Board) -> String {
+    use crate::game::*;
+
+    let output = match input {
+        1 => reserve_development_card(0, 0, user, board),
+        2 => reserve_development_card(0, 1, user, board),
+        3 => reserve_development_card(0, 2, user, board),
+        4 => reserve_development_card(0, 3, user, board),
+        5 => reserve_development_card(1, 0, user, board),
+        6 => reserve_development_card(1, 1, user, board),
+        7 => reserve_development_card(1, 2, user, board),
+        8 => reserve_development_card(1, 3, user, board),
+        9 => reserve_development_card(2, 0, user, board),
+        10 => reserve_development_card(2, 1, user, board),
+        11 => reserve_development_card(2, 2, user, board),
+        12 => reserve_development_card(2, 3, user, board),
+        13 => buy_development_card(0, 0, user, board),
+        14 => buy_development_card(0, 1, user, board),
+        15 => buy_development_card(0, 2, user, board),
+        16 => buy_development_card(0, 3, user, board),
+        17 => buy_development_card(1, 0, user, board),
+        18 => buy_development_card(1, 1, user, board),
+        19 => buy_development_card(1, 2, user, board),
+        20 => buy_development_card(1, 3, user, board),
+        21 => buy_development_card(2, 0, user, board),
+        22 => buy_development_card(2, 1, user, board),
+        23 => buy_development_card(2, 2, user, board),
+        24 => buy_development_card(2, 3, user, board),
+        25 => select_two_same_tokens(Color::White, user, board),
+        26 => select_two_same_tokens(Color::Black, user, board),
+        27 => select_two_same_tokens(Color::Red, user, board),
+        28 => select_two_same_tokens(Color::Blue, user, board),
+        29 => select_two_same_tokens(Color::Green, user, board),
+        30 => select_three_tokens(Color::Black, Color::White, Color::Red, user, board),
+        31 => select_three_tokens(Color::Black, Color::White, Color::Blue, user, board),
+        32 => select_three_tokens(Color::Black, Color::White, Color::Green, user, board),
+        33 => select_three_tokens(Color::Black, Color::Red, Color::Blue, user, board),
+        34 => select_three_tokens(Color::Black, Color::Red, Color::Green, user, board),
+        35 => select_three_tokens(Color::Black, Color::Blue, Color::Green, user, board),
+        36 => select_three_tokens(Color::White, Color::Red, Color::Blue, user, board),
+        37 => select_three_tokens(Color::White, Color::Red, Color::Green, user, board),
+        38 => select_three_tokens(Color::White, Color::Blue, Color::Green, user, board),
+        39 => select_three_tokens(Color::Red, Color::Blue, Color::Green, user, board),
+        40 => reserve_stack_card(Level::One, user, board),
+        41 => reserve_stack_card(Level::Two, user, board),
+        42 => reserve_stack_card(Level::Three, user, board),
+        _ => String::from(""),
+    };
+
+    output
+}
+
+pub fn print(result: &str, user: &User) -> () {
+    println!("結果: {}", result);
+    println!("ユーザーステータス: {}", user);
+}
+
+pub fn is_over(user: &User) -> bool {
+    // TODO magic number
+    user.get_vp() >= 15
+}
+
+fn reserve_development_card(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
     println!("手札の確保");
     if user.is_over_capacity_of_hand() {
         String::from("手札がいっぱいです")
@@ -21,7 +90,8 @@ pub fn reserve_development_card(x: u8, y: u8, user: &mut User, board: &mut Board
         String::from("OK")
     }
 }
-pub fn buy_development_card(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
+
+fn buy_development_card(x: u8, y: u8, user: &mut User, board: &mut Board) -> String {
     println!("手札の購入");
     match board.peek_card(x, y) {
         Some(card) => {
@@ -38,7 +108,7 @@ pub fn buy_development_card(x: u8, y: u8, user: &mut User, board: &mut Board) ->
     }
 }
 
-pub fn select_two_same_tokens(color: Color, user: &mut User, board: &mut Board) -> String {
+fn select_two_same_tokens(color: Color, user: &mut User, board: &mut Board) -> String {
     println!("トークンを取得");
     if board.can_get_token(color) {
         for _ in 0..2 {
@@ -49,7 +119,7 @@ pub fn select_two_same_tokens(color: Color, user: &mut User, board: &mut Board) 
     String::from("OK")
 }
 
-pub fn select_three_tokens(
+fn select_three_tokens(
     color1: Color,
     color2: Color,
     color3: Color,
@@ -72,7 +142,7 @@ pub fn select_three_tokens(
     String::from("OK")
 }
 
-pub fn reserve_stack_card(level: Level, user: &mut User, board: &mut Board) -> String {
+fn reserve_stack_card(level: Level, user: &mut User, board: &mut Board) -> String {
     println!("スタックされたカード取得");
     if user.is_over_capacity_of_hand() {
         String::from("手札がいっぱいです")
