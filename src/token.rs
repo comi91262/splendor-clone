@@ -1,10 +1,24 @@
 use crate::color::Color;
 
+use std::fmt;
+
 const MAX_NUMBER_OF_TOKEN: usize = 5;
 
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Copy)]
 pub struct Token {
     color: Color,
+}
+
+impl fmt::Debug for Token {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.color)
+    }
+}
+
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.color)
+    }
 }
 
 impl Token {

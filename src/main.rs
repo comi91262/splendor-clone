@@ -98,7 +98,7 @@ fn eval(input: u8, user: &mut User, board: &mut Board) -> String {
 
 fn print(result: &str, user: &User) -> () {
     println!("結果: {}", result);
-    println!("ユーザーステータス: {:?}", user);
+    println!("ユーザーステータス: {}", user);
 }
 
 fn is_over(user: &User) -> bool {
@@ -110,11 +110,11 @@ fn main() {
     let mut board = Board::create();
     let mut user = User::create();
 
-    println!("{:}", board);
+    // println!("{:}", board);
 
     let mut rng = rand::thread_rng();
 
-    for _ in 0..1 {
+    for _ in 0..2 {
         let command = rng.gen::<u8>() % 42 + 1;
         let result = eval(command, &mut user, &mut board);
         if is_over(&user) {

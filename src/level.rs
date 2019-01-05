@@ -1,4 +1,4 @@
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq, Hash, Copy)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum Level {
     One,
     Two,

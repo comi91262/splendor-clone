@@ -1,17 +1,35 @@
 use crate::card::Card;
 use crate::color::Color;
 use crate::token::Token;
+
 use std::collections::HashMap;
+use std::fmt;
 
 const MAX_NUMBER_OF_HANDS: usize = 3;
 
-#[derive(Debug)]
 pub struct User {
     id: u8,
     hand: Vec<Card>,
     acquired_card: Vec<Card>,
     vp: u8,
     token_stack: HashMap<Color, Vec<Token>>,
+}
+
+impl fmt::Display for User {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "
+ID: {} 勝利点: {}
+手札: {:?}
+取得したカード:
+{:?}
+取得したトークン:
+{:?}
+        ",
+            self.id, self.vp, self.hand, self.acquired_card, self.token_stack,
+        )
+    }
 }
 impl User {
     pub fn create() -> User {
@@ -23,17 +41,17 @@ impl User {
             token_stack: HashMap::new(),
         };
         user.token_stack
-            .insert(Color::Black, Token::create_stack(Color::Black));
+            .insert(Color::Black, vec![]);
         user.token_stack
-            .insert(Color::White, Token::create_stack(Color::White));
+            .insert(Color::White, vec![]);
         user.token_stack
-            .insert(Color::Red, Token::create_stack(Color::Red));
+            .insert(Color::Red, vec![]);
         user.token_stack
-            .insert(Color::Blue, Token::create_stack(Color::Blue));
+            .insert(Color::Blue, vec![]);
         user.token_stack
-            .insert(Color::Green, Token::create_stack(Color::Green));
+            .insert(Color::Green, vec![]);
         user.token_stack
-            .insert(Color::Gold, Token::create_stack(Color::Gold));
+            .insert(Color::Gold, vec![]);
 
         user
     }

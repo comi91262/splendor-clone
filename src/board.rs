@@ -13,7 +13,6 @@ use std::io::{BufRead, BufReader};
 
 const LIMIT_OF_GETTING_SAME_TOKEN: u8 = 4;
 
-#[derive(Debug)]
 pub struct Board {
     board: Array2<Card>,
     stack: HashMap<Level, Vec<Card>>,
@@ -21,21 +20,21 @@ pub struct Board {
     noble_tile: Vec<NobleTile>,
 }
 
-impl fmt::Display for Board {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "
-レベル3 残り残数: {:?}
-レベル2 残り残数: {:?}
-レベル1 残り残数: {:?}
-        ",
-            self.stack.get(&Level::One).unwrap().len(),
-            self.stack.get(&Level::Two).unwrap().len(),
-            self.stack.get(&Level::Three).unwrap().len()
-        )
-    }
-}
+// impl fmt::Display for Board {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         write!(
+//             f,
+//             "
+// レベル3 残り残数: {:?}
+// レベル2 残り残数: {:?}
+// レベル1 残り残数: {:?}
+//         ",
+//             self.stack.get(&Level::One).unwrap().len(),
+//             self.stack.get(&Level::Two).unwrap().len(),
+//             self.stack.get(&Level::Three).unwrap().len()
+//         )
+//     }
+// }
 
 impl Board {
     pub fn create() -> Board {

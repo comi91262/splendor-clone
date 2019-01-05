@@ -1,7 +1,9 @@
 use crate::color::Color;
 use crate::user::User;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+use std::fmt;
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Card {
     pub level: u8,
     pub color: Color,
@@ -11,6 +13,23 @@ pub struct Card {
     pub cost_red: u8,
     pub cost_blue: u8,
     pub cost_green: u8,
+}
+
+impl fmt::Debug for Card {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Lv: {} {} {}点 {} {} {} {} {}",
+            self.level,
+            self.color,
+            self.point,
+            self.cost_black,
+            self.cost_white,
+            self.cost_red,
+            self.cost_blue,
+            self.cost_green,
+        )
+    }
 }
 
 impl Default for Card {
