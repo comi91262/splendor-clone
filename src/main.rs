@@ -110,11 +110,10 @@ fn main() {
     let mut board = Board::create();
     let mut user = User::create();
 
-    // println!("{:}", board);
-
     let mut rng = rand::thread_rng();
 
     for _ in 0..2 {
+        println!("{}", board);
         let command = rng.gen::<u8>() % 42 + 1;
         let result = eval(command, &mut user, &mut board);
         if is_over(&user) {

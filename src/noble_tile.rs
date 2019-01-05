@@ -1,3 +1,4 @@
+use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -9,6 +10,38 @@ pub struct NobleTile {
     red_bonus: u8,
     blue_bonus: u8,
     green_bonus: u8,
+}
+
+impl fmt::Debug for NobleTile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}点 {} {} {} {} {}",
+            self.point,
+            self.black_bonus,
+            self.white_bonus,
+            self.red_bonus,
+            self.blue_bonus,
+            self.green_bonus,
+        )
+    }
+}
+
+impl fmt::Display for NobleTile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "
+{}点 {} {} {} {} {}
+        ",
+            self.point,
+            self.black_bonus,
+            self.white_bonus,
+            self.red_bonus,
+            self.blue_bonus,
+            self.green_bonus,
+        )
+    }
 }
 
 impl NobleTile {

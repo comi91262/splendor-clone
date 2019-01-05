@@ -40,18 +40,12 @@ impl User {
             acquired_card: vec![],
             token_stack: HashMap::new(),
         };
-        user.token_stack
-            .insert(Color::Black, vec![]);
-        user.token_stack
-            .insert(Color::White, vec![]);
-        user.token_stack
-            .insert(Color::Red, vec![]);
-        user.token_stack
-            .insert(Color::Blue, vec![]);
-        user.token_stack
-            .insert(Color::Green, vec![]);
-        user.token_stack
-            .insert(Color::Gold, vec![]);
+        user.token_stack.insert(Color::Black, vec![]);
+        user.token_stack.insert(Color::White, vec![]);
+        user.token_stack.insert(Color::Red, vec![]);
+        user.token_stack.insert(Color::Blue, vec![]);
+        user.token_stack.insert(Color::Green, vec![]);
+        user.token_stack.insert(Color::Gold, vec![]);
 
         user
     }

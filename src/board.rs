@@ -20,21 +20,52 @@ pub struct Board {
     noble_tile: Vec<NobleTile>,
 }
 
-// impl fmt::Display for Board {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(
-//             f,
-//             "
-// レベル3 残り残数: {:?}
-// レベル2 残り残数: {:?}
-// レベル1 残り残数: {:?}
-//         ",
-//             self.stack.get(&Level::One).unwrap().len(),
-//             self.stack.get(&Level::Two).unwrap().len(),
-//             self.stack.get(&Level::Three).unwrap().len()
-//         )
-//     }
-// }
+impl fmt::Display for Board {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "
+{:?}
+----------------------------------------------------------------------------------------------
+{}| {}| {}| {}
+{}| {}| {}| {}
+{}| {}| {}| {}
+----------------------------------------------------------------------------------------------
+レベル3 残り残数: {}
+レベル2 残り残数: {}
+レベル1 残り残数: {}
+黒トークン 残り枚数: {}
+白トークン 残り枚数: {}
+赤トークン 残り枚数: {}
+青トークン 残り枚数: {}
+緑トークン 残り枚数: {}
+金トークン 残り枚数: {}
+        ",
+            self.noble_tile,
+            self.board[(0, 0)],
+            self.board[(0, 1)],
+            self.board[(0, 2)],
+            self.board[(0, 3)],
+            self.board[(1, 0)],
+            self.board[(1, 1)],
+            self.board[(1, 2)],
+            self.board[(1, 3)],
+            self.board[(2, 0)],
+            self.board[(2, 1)],
+            self.board[(2, 2)],
+            self.board[(2, 3)],
+            self.stack.get(&Level::One).unwrap().len(),
+            self.stack.get(&Level::Two).unwrap().len(),
+            self.stack.get(&Level::Three).unwrap().len(),
+            self.token_stack.get(&Color::Black).unwrap().len(),
+            self.token_stack.get(&Color::White).unwrap().len(),
+            self.token_stack.get(&Color::Red).unwrap().len(),
+            self.token_stack.get(&Color::Blue).unwrap().len(),
+            self.token_stack.get(&Color::Green).unwrap().len(),
+            self.token_stack.get(&Color::Gold).unwrap().len(),
+        )
+    }
+}
 
 impl Board {
     pub fn create() -> Board {

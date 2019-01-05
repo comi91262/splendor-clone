@@ -32,6 +32,23 @@ impl fmt::Debug for Card {
     }
 }
 
+impl fmt::Display for Card {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Lv: {} {} {}点 {} {} {} {} {}",
+            self.level,
+            self.color,
+            self.point,
+            self.cost_black,
+            self.cost_white,
+            self.cost_red,
+            self.cost_blue,
+            self.cost_green,
+        )
+    }
+}
+
 impl Default for Card {
     fn default() -> Self {
         Card {
