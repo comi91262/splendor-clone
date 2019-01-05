@@ -45,14 +45,19 @@ impl Board {
             token_stack: HashMap::new(),
             noble_tile: vec![],
         };
+
+        board.stack.insert(Level::One, vec![]);
+        board.stack.insert(Level::Two, vec![]);
+        board.stack.insert(Level::Three, vec![]);
+
         for result in BufReader::new(File::open("card.json").unwrap()).lines() {
             let l = result.unwrap();
             let card: Card = serde_json::from_str(&l).unwrap();
 
             match card {
                 Card { level: 1, .. } => board.stack.get_mut(&Level::One).unwrap().push(card),
-                Card { level: 2, .. } => board.stack.get_mut(&Level::One).unwrap().push(card),
-                Card { level: 3, .. } => board.stack.get_mut(&Level::One).unwrap().push(card),
+                Card { level: 2, .. } => board.stack.get_mut(&Level::Two).unwrap().push(card),
+                Card { level: 3, .. } => board.stack.get_mut(&Level::Three).unwrap().push(card),
                 Card { level: _, .. } => unreachable!(),
             }
         }
