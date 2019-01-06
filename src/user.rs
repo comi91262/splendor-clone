@@ -53,6 +53,9 @@ impl User {
     pub fn get_vp(&self) -> u8 {
         self.vp
     }
+    pub fn add_vp(&mut self, point: u8) {
+        self.vp += point;
+    }
     fn _set_vp(&mut self, vp: u8) {
         self.vp = vp
     }
@@ -84,7 +87,9 @@ impl User {
         self.pay_every_token(card, Color::Blue);
         self.pay_every_token(card, Color::Green);
     }
-
+    pub fn get_acquired_cards(&self) -> &Vec<Card> {
+        &self.acquired_card
+    }
     fn pay_every_token(&mut self, card: &Card, color: Color) {
         let cost = card.get_cost(color);
         let token = self.get_number_of_tokens(color);

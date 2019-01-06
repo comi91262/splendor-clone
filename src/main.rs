@@ -26,6 +26,8 @@ fn main() {
         println!("{}手番目\n{}", turn, board);
         let command = game::read(&mut rng);
         let result = game::eval(command, &mut user, &mut board, &mut rng);
+
+        game::visit(&mut user, &mut board);
         if is_over(&user) {
             game::print(&"end", &user);
             process::exit(1);

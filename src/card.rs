@@ -85,6 +85,10 @@ impl Card {
         gold_token > 0
     }
 
+    pub fn get_color(&self) -> Color {
+        self.color
+    }
+
     pub fn get_cost(&self, color: Color) -> u8 {
         match color {
             Color::Black => self.cost_black,

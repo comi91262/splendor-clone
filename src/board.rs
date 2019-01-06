@@ -161,6 +161,9 @@ impl Board {
     pub fn can_get_token(&self, color: Color) -> bool {
         self.get_number_of_tokens(color) >= LIMIT_OF_GETTING_SAME_TOKEN
     }
+    pub fn get_noble_tile(&mut self) -> &mut Vec<NobleTile> {
+        &mut self.noble_tile
+    }
     fn get_number_of_tokens(&self, color: Color) -> u8 {
         let stack = self.token_stack.get(&color).unwrap();
         stack.len() as u8

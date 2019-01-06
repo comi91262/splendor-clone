@@ -194,3 +194,20 @@ fn reserve_stack_card(
         }
     }
 }
+
+pub fn visit(user: &mut User, board: &mut Board) {
+    let mut remove_tile_order = vec![];
+    let mut order = 0;
+
+    for tile in board.get_noble_tile().iter_mut() {
+        if tile.can_visit(&user) {
+            user.add_vp(tile.get_point());
+            remove_tile_order.push(order);
+        }
+        order += 1;
+    }
+
+    for order in remove_tile_order {
+        board.get_noble_tile().remove(order as usize);
+    }
+}
