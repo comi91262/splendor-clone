@@ -64,7 +64,7 @@ pub fn eval(input: u8, user: &mut User, board: &mut Board, rng: &mut ThreadRng) 
             return result.to_string();
         }
         Err(error_msg) => {
-            println!("{}", error_msg);
+            println!("結果: {}", error_msg);
             let input = read(rng);
             eval(input, user, board, rng)
         }
@@ -87,7 +87,7 @@ fn reserve_development_card(
     user: &mut User,
     board: &mut Board,
 ) -> Result<&'static str, &'static str> {
-    println!("カードの確保");
+    println!("試行: カードの確保");
     if user.is_over_capacity_of_hand() {
         Err("手札がいっぱいです")
     } else {
@@ -114,19 +114,22 @@ fn buy_development_card(
     user: &mut User,
     board: &mut Board,
 ) -> Result<&'static str, &'static str> {
-    println!("手札の購入");
+    println!("試行: 手札の購入");
+    let is_available;
     match board.peek_card(x, y) {
         Some(card) => {
-            if card.is_available(&user) {
-                user.pay(&card);
-                let card = board.uget_card(x, y);
-                user.obtain(card);
-                Ok("手札を購入しました")
-            } else {
-                Err("必要な宝石数が足りません")
-            }
+            is_available = card.is_available(&user);
         }
-        None => Err("そこにはカードがありません"),
+        None => return Err("そこにはカードがありません"),
+    }
+
+    if is_available {
+        let card = board.uget_card(x, y);
+        user.pay(&card, board.get_token_stack());
+        user.obtain(card);
+        Ok("手札を購入しました")
+    } else {
+        Err("必要な宝石数が足りません")
     }
 }
 
@@ -135,7 +138,7 @@ fn select_two_same_tokens(
     user: &mut User,
     board: &mut Board,
 ) -> Result<&'static str, &'static str> {
-    println!("トークンを取得");
+    println!("試行: トークンを取得");
     if board.can_get_token(color) {
         for _ in 0..2 {
             let token = board.uget_token(color);
@@ -154,7 +157,7 @@ fn select_three_tokens(
     user: &mut User,
     board: &mut Board,
 ) -> Result<&'static str, &'static str> {
-    println!("トークンを取得");
+    println!("試行: トークンを取得");
     match board.get_token(color1) {
         Some(token) => user.add_token(token),
         None => (),
@@ -175,7 +178,7 @@ fn reserve_stack_card(
     user: &mut User,
     board: &mut Board,
 ) -> Result<&'static str, &'static str> {
-    println!("スタックされたカード取得");
+    println!("試行: スタックされたカード取得");
     if user.is_over_capacity_of_hand() {
         Err("手札がいっぱいです")
     } else {

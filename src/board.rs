@@ -158,6 +158,9 @@ impl Board {
         let stack = self.token_stack.get_mut(&color).unwrap();
         stack.pop().unwrap()
     }
+    pub fn get_token_stack(&mut self) -> &mut HashMap<Color, Vec<Token>> {
+        &mut self.token_stack
+    }
     pub fn can_get_token(&self, color: Color) -> bool {
         self.get_number_of_tokens(color) >= LIMIT_OF_GETTING_SAME_TOKEN
     }

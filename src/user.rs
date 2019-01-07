@@ -75,13 +75,13 @@ impl User {
         self.acquired_card.push(card);
     }
     pub fn is_over_capacity_of_hand(&self) -> bool {
-        self.hand.len() > MAX_NUMBER_OF_HANDS
+        self.hand.len() >= MAX_NUMBER_OF_HANDS
     }
     pub fn add_token(&mut self, token: Token) {
         let stack = self.token_stack.get_mut(&token.get_color()).unwrap();
         stack.push(token);
     }
-    pub fn pay(&mut self, card: &Card) {
+    pub fn pay(&mut self, card: &Card, token_stack: &mut HashMap<Color, Vec<Token>>) {
         let jewelries = self.get_jewelries();
         let colors = [
             Color::Black,
@@ -95,7 +95,13 @@ impl User {
             let cost = card.get_cost(*color);
             let number_of_token = self.get_number_of_tokens(*color);
             let jewelry = jewelries.get_jewelry(*color);
-            self.pay_every_token(cost, number_of_token, jewelry, *color);
+            self.pay_every_token(
+                cost,
+                number_of_token,
+                jewelry,
+                *color,
+                &mut token_stack.get_mut(color).unwrap(),
+            );
         }
     }
     pub fn get_acquired_cards(&self) -> &Vec<Card> {
@@ -110,16 +116,32 @@ impl User {
 
         jewelries
     }
-    fn pay_every_token(&mut self, cost: u8, tokens: u8, jewelries: u8, color: Color) {
+    fn pay_every_token(
+        &mut self,
+        cost: u8,
+        tokens: u8,
+        jewelries: u8,
+        color: Color,
+        token_stack: &mut Vec<Token>,
+    ) {
         if jewelries > cost {
             return;
         }
         let new_cost = cost - jewelries;
         if tokens > new_cost {
             self.sub_token(color, cost);
+            for _ in 0..cost {
+                token_stack.push(Token::create(color))
+            }
         } else {
             self.sub_token(color, tokens);
+            for _ in 0..tokens {
+                token_stack.push(Token::create(color))
+            }
             self.sub_token(Color::Gold, cost - tokens);
+            for _ in 0..cost - tokens {
+                token_stack.push(Token::create(Color::Gold))
+            }
         }
     }
 
