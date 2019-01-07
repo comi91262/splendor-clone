@@ -67,6 +67,9 @@ impl User {
         let stack = self.token_stack.get(&color).unwrap();
         stack.len() as u8
     }
+    pub fn get_number_of_hands(&self) -> u8 {
+        self.hand.len() as u8
+    }
     pub fn add_to_hands(&mut self, card: Card) {
         self.hand.push(card);
     }
@@ -100,12 +103,22 @@ impl User {
                 number_of_token,
                 jewelry,
                 *color,
-                &mut token_stack.get_mut(color).unwrap(),
+                token_stack
             );
         }
     }
     pub fn get_acquired_cards(&self) -> &Vec<Card> {
         &self.acquired_card
+    }
+    pub fn peek_card_in_hands(&self, order: u8) -> Option<&Card> {
+        self.hand.get(order as usize)
+    }
+    pub fn uget_card_in_hands(&mut self, order: u8) -> Card {
+        let card = self.hand.get(order as usize).unwrap();
+        card.clone()
+    }
+    pub fn remove_card_in_hands(&mut self, order: u8) {
+        self.hand.remove(order as usize);
     }
     pub fn get_jewelries(&self) -> JewelryBox {
         let mut jewelries = JewelryBox::create();
@@ -122,7 +135,7 @@ impl User {
         tokens: u8,
         jewelries: u8,
         color: Color,
-        token_stack: &mut Vec<Token>,
+        token_stack: &mut HashMap<Color, Vec<Token>>
     ) {
         if jewelries > cost {
             return;
@@ -130,17 +143,20 @@ impl User {
         let new_cost = cost - jewelries;
         if tokens > new_cost {
             self.sub_token(color, cost);
+            let stack = token_stack.get_mut(&color).unwrap();
             for _ in 0..cost {
-                token_stack.push(Token::create(color))
+                stack.push(Token::create(color));
             }
         } else {
             self.sub_token(color, tokens);
+            let stack = token_stack.get_mut(&color).unwrap();
             for _ in 0..tokens {
-                token_stack.push(Token::create(color))
+                stack.push(Token::create(color))
             }
             self.sub_token(Color::Gold, cost - tokens);
+            let stack = token_stack.get_mut(&Color::Gold).unwrap();
             for _ in 0..cost - tokens {
-                token_stack.push(Token::create(Color::Gold))
+                stack.push(Token::create(Color::Gold));
             }
         }
     }

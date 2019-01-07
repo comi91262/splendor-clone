@@ -7,7 +7,7 @@ use rand::rngs::ThreadRng;
 use rand::Rng;
 
 pub fn read(rng: &mut ThreadRng) -> u8 {
-    rng.gen::<u8>() % 42 + 1
+    rng.gen::<u8>() % 45 + 1
 }
 
 pub fn eval(input: u8, user: &mut User, board: &mut Board, rng: &mut ThreadRng) -> String {
@@ -56,6 +56,9 @@ pub fn eval(input: u8, user: &mut User, board: &mut Board, rng: &mut ThreadRng) 
         40 => reserve_stack_card(Level::One, user, board),
         41 => reserve_stack_card(Level::Two, user, board),
         42 => reserve_stack_card(Level::Three, user, board),
+        43 => buy_reserved_card(0, user, board),
+        44 => buy_reserved_card(1, user, board),
+        45 => buy_reserved_card(2, user, board),
         _ => unreachable!(),
     };
 
@@ -114,7 +117,7 @@ fn buy_development_card(
     user: &mut User,
     board: &mut Board,
 ) -> Result<&'static str, &'static str> {
-    println!("試行: 手札の購入");
+    println!("試行: カードの購入");
     let is_available;
     match board.peek_card(x, y) {
         Some(card) => {
@@ -127,7 +130,7 @@ fn buy_development_card(
         let card = board.uget_card(x, y);
         user.pay(&card, board.get_token_stack());
         user.obtain(card);
-        Ok("手札を購入しました")
+        Ok("カードを購入しました")
     } else {
         Err("必要な宝石数が足りません")
     }
@@ -195,6 +198,29 @@ fn reserve_stack_card(
             }
             None => Err("指定のスタックにカードはありませんでした"),
         }
+    }
+}
+
+pub fn buy_reserved_card(
+    order: u8,
+    user: &mut User,
+    board: &mut Board,
+) -> Result<&'static str, &'static str> {
+    println!("試行: 確保したカードの購入");
+
+    let is_available;
+    match user.peek_card_in_hands(order) {
+        Some(card) => is_available = card.is_available(&user),
+        None => return Err("そこにはカードがありません"),
+    }
+    if is_available {
+        let card = user.uget_card_in_hands(order);
+        user.pay(&card, board.get_token_stack());
+        user.obtain(card);
+        user.remove_card_in_hands(order);
+        Ok("カードを購入しました")
+    } else {
+        Err("必要な宝石数が足りません")
     }
 }
 
