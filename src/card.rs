@@ -69,6 +69,8 @@ impl Card {
         self.point
     }
     pub fn is_available(&self, user: &User) -> bool {
+        let jewelries = user.get_jewelries();
+
         let black_token = user.get_number_of_tokens(Color::Black);
         let white_token = user.get_number_of_tokens(Color::White);
         let red_token = user.get_number_of_tokens(Color::Red);
@@ -76,11 +78,31 @@ impl Card {
         let green_token = user.get_number_of_tokens(Color::Green);
         let mut gold_token = user.get_number_of_tokens(Color::Gold) as i8;
 
-        self.estimate_gold_token(black_token, self.cost_black, &mut gold_token);
-        self.estimate_gold_token(white_token, self.cost_white, &mut gold_token);
-        self.estimate_gold_token(red_token, self.cost_red, &mut gold_token);
-        self.estimate_gold_token(blue_token, self.cost_blue, &mut gold_token);
-        self.estimate_gold_token(green_token, self.cost_green, &mut gold_token);
+        self.estimate_gold_token(
+            black_token + jewelries.get_jewelry(Color::Black),
+            self.cost_black,
+            &mut gold_token,
+        );
+        self.estimate_gold_token(
+            white_token + jewelries.get_jewelry(Color::White),
+            self.cost_white,
+            &mut gold_token,
+        );
+        self.estimate_gold_token(
+            red_token + jewelries.get_jewelry(Color::Red),
+            self.cost_red,
+            &mut gold_token,
+        );
+        self.estimate_gold_token(
+            blue_token + jewelries.get_jewelry(Color::Blue),
+            self.cost_blue,
+            &mut gold_token,
+        );
+        self.estimate_gold_token(
+            green_token + jewelries.get_jewelry(Color::Green),
+            self.cost_green,
+            &mut gold_token,
+        );
 
         gold_token > 0
     }

@@ -5,6 +5,7 @@ pub mod board;
 pub mod card;
 pub mod color;
 mod game;
+pub mod jewelry_box;
 pub mod level;
 pub mod noble_tile;
 pub mod token;
@@ -29,7 +30,7 @@ fn main() {
 
         game::visit(&mut user, &mut board);
         if is_over(&user) {
-            game::print(&"end", &user);
+            game::print(&"ゲーム終了しました", &user);
             process::exit(1);
         }
         game::print(&result, &user);

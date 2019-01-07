@@ -1,5 +1,6 @@
 use crate::card::Card;
 use crate::color::Color;
+use crate::jewelry_box::JewelryBox;
 use crate::token::Token;
 
 use std::collections::HashMap;
@@ -81,23 +82,44 @@ impl User {
         stack.push(token);
     }
     pub fn pay(&mut self, card: &Card) {
-        self.pay_every_token(card, Color::Black);
-        self.pay_every_token(card, Color::White);
-        self.pay_every_token(card, Color::Red);
-        self.pay_every_token(card, Color::Blue);
-        self.pay_every_token(card, Color::Green);
+        let jewelries = self.get_jewelries();
+        let colors = [
+            Color::Black,
+            Color::White,
+            Color::Red,
+            Color::Blue,
+            Color::Green,
+        ];
+
+        for color in colors.iter() {
+            let cost = card.get_cost(*color);
+            let number_of_token = self.get_number_of_tokens(*color);
+            let jewelry = jewelries.get_jewelry(*color);
+            self.pay_every_token(cost, number_of_token, jewelry, *color);
+        }
     }
     pub fn get_acquired_cards(&self) -> &Vec<Card> {
         &self.acquired_card
     }
-    fn pay_every_token(&mut self, card: &Card, color: Color) {
-        let cost = card.get_cost(color);
-        let token = self.get_number_of_tokens(color);
-        if token > cost {
+    pub fn get_jewelries(&self) -> JewelryBox {
+        let mut jewelries = JewelryBox::create();
+
+        for card in self.get_acquired_cards().iter() {
+            jewelries.add_jewelry(card.get_color());
+        }
+
+        jewelries
+    }
+    fn pay_every_token(&mut self, cost: u8, tokens: u8, jewelries: u8, color: Color) {
+        if jewelries > cost {
+            return;
+        }
+        let new_cost = cost - jewelries;
+        if tokens > new_cost {
             self.sub_token(color, cost);
         } else {
-            self.sub_token(color, token);
-            self.sub_token(Color::Gold, cost - token);
+            self.sub_token(color, tokens);
+            self.sub_token(Color::Gold, cost - tokens);
         }
     }
 

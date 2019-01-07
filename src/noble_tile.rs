@@ -3,7 +3,9 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 use crate::color::Color;
-use crate::user::User;
+use crate::jewelry_box::JewelryBox;
+
+const MAX_NUMBER_OF_TILES: u8 = 4;
 
 #[derive(Serialize, Deserialize)]
 pub struct NobleTile {
@@ -55,42 +57,39 @@ impl NobleTile {
             stack.push(tile);
         }
 
+        for _ in 0..10 - MAX_NUMBER_OF_TILES {
+            stack.pop();
+        }
         stack
     }
     pub fn get_point(&self) -> u8 {
         self.point
     }
-    pub fn can_visit(&self, user: &User) -> bool {
-        struct JewelryBox {
-            black: u8,
-            white: u8,
-            red: u8,
-            blue: u8,
-            green: u8,
-        };
+    pub fn can_visit(&self, jewelries: &JewelryBox) -> bool {
+        let colors = [
+            Color::Black,
+            Color::White,
+            Color::Red,
+            Color::Blue,
+            Color::Green,
+        ];
 
-        let mut jewelries = JewelryBox {
-            black: 0,
-            white: 0,
-            red: 0,
-            blue: 0,
-            green: 0,
-        };
-        for card in user.get_acquired_cards().iter() {
-            match card.get_color() {
-                Color::Black => jewelries.black += 1,
-                Color::White => jewelries.white += 1,
-                Color::Red => jewelries.red += 1,
-                Color::Blue => jewelries.blue += 1,
-                Color::Green => jewelries.green += 1,
-                Color::Gold => (),
+        for color in colors.iter() {
+            if self.get_bonus(*color) > jewelries.get_jewelry(*color) {
+                return false;
             }
         }
 
-        jewelries.black >= self.black_bonus
-            && jewelries.white >= self.white_bonus
-            && jewelries.red >= self.red_bonus
-            && jewelries.blue >= self.blue_bonus
-            && jewelries.green >= self.green_bonus
+        return true;
+    }
+    fn get_bonus(&self, color: Color) -> u8 {
+        match color {
+            Color::Black => self.black_bonus,
+            Color::White => self.white_bonus,
+            Color::Red => self.red_bonus,
+            Color::Blue => self.blue_bonus,
+            Color::Green => self.green_bonus,
+            _ => unreachable!(),
+        }
     }
 }
