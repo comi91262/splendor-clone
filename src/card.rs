@@ -104,7 +104,7 @@ impl Card {
             &mut gold_token,
         );
 
-        gold_token > 0
+        gold_token >= 0
     }
 
     pub fn get_color(&self) -> Color {
@@ -128,4 +128,26 @@ impl Card {
             *gold_token -= diff as i8;
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Card;
+
+    #[test]
+    fn test_estimate_gold_token() {
+        let card: Card = Default::default();
+        let mut gold = 0;
+        card.estimate_gold_token(0, 0, &mut gold);
+        assert_eq!(gold, 0);
+
+        let mut gold = 0;
+        card.estimate_gold_token(0, 2, &mut gold);
+        assert_eq!(gold, -2);
+
+        let mut gold = 2;
+        card.estimate_gold_token(1, 2, &mut gold);
+        assert_eq!(gold, 1);
+    }
+
 }

@@ -98,13 +98,7 @@ impl User {
             let cost = card.get_cost(*color);
             let number_of_token = self.get_number_of_tokens(*color);
             let jewelry = jewelries.get_jewelry(*color);
-            self.pay_every_token(
-                cost,
-                number_of_token,
-                jewelry,
-                *color,
-                token_stack
-            );
+            self.pay_every_token(cost, number_of_token, jewelry, *color, token_stack);
         }
     }
     pub fn get_acquired_cards(&self) -> &Vec<Card> {
@@ -135,16 +129,16 @@ impl User {
         tokens: u8,
         jewelries: u8,
         color: Color,
-        token_stack: &mut HashMap<Color, Vec<Token>>
+        token_stack: &mut HashMap<Color, Vec<Token>>,
     ) {
-        if jewelries > cost {
+        if jewelries >= cost {
             return;
         }
         let new_cost = cost - jewelries;
         if tokens > new_cost {
-            self.sub_token(color, cost);
+            self.sub_token(color, new_cost);
             let stack = token_stack.get_mut(&color).unwrap();
-            for _ in 0..cost {
+            for _ in 0..new_cost {
                 stack.push(Token::create(color));
             }
         } else {
@@ -153,9 +147,9 @@ impl User {
             for _ in 0..tokens {
                 stack.push(Token::create(color))
             }
-            self.sub_token(Color::Gold, cost - tokens);
+            self.sub_token(Color::Gold, new_cost - tokens);
             let stack = token_stack.get_mut(&Color::Gold).unwrap();
-            for _ in 0..cost - tokens {
+            for _ in 0..new_cost - tokens {
                 stack.push(Token::create(Color::Gold));
             }
         }
