@@ -12,28 +12,30 @@ pub mod token;
 pub mod user;
 
 use crate::board::Board;
-use crate::game::*;
+use crate::game::Game;
 use crate::user::User;
 
 use std::process;
 
 fn main() {
+    let mut game = Game::create();
     let mut board = Board::create();
     let mut user = User::create();
-    let mut rng = rand::thread_rng();
     let mut turn = 1;
 
-    loop {
+    for _ in 0..1 {
         println!("{}手番目\n{}", turn, board);
-        let command = game::read(&mut rng);
-        let result = game::eval(command, &mut user, &mut board, &mut rng);
 
-        game::visit(&mut user, &mut board);
-        if is_over(&user) {
-            game::print(&"ゲーム終了しました", &user);
+        game.look(1, &user, &board);
+        let command = game.read();
+        let result = game.eval(command, &mut user, &mut board);
+
+        game.visit(&mut user, &mut board);
+        if game.is_over(&user) {
+            game.print(&"ゲーム終了しました", &user);
             process::exit(1);
         }
-        game::print(&result, &user);
+        game.print(&result, &user);
 
         turn = turn + 1;
     }

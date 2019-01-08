@@ -13,6 +13,7 @@ use std::io::{BufRead, BufReader};
 
 const LIMIT_OF_GETTING_SAME_TOKEN: u8 = 4;
 
+#[derive(Clone)]
 pub struct Board {
     board: Array2<Card>,
     stack: HashMap<Level, Vec<Card>>,

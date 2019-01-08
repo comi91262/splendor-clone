@@ -7,7 +7,7 @@ use crate::jewelry_box::JewelryBox;
 
 const MAX_NUMBER_OF_TILES: u8 = 4;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct NobleTile {
     point: u8,
     black_bonus: u8,

@@ -8,6 +8,7 @@ use std::fmt;
 
 const MAX_NUMBER_OF_HANDS: usize = 3;
 
+#[derive(Clone)]
 pub struct User {
     id: u8,
     hand: Vec<Card>,
@@ -162,3 +163,14 @@ impl User {
         }
     }
 }
+
+// use std::cell::RefCell;
+// pub struct UserMock {
+//     user: RefCell<Vec<User>>
+// }
+//
+// impl UserMock {
+//     pub fn get_number_of_tokens(&self, color: Color) -> u8 {
+//        1
+//     }
+// }

@@ -70,12 +70,18 @@ impl Card {
     }
     pub fn is_available(&self, user: &User) -> bool {
         let jewelries = user.get_jewelries();
-        let colors = [Color::Black, Color::White, Color::Red, Color::Blue, Color::Green, Color::Gold];
+        let colors = [
+            Color::Black,
+            Color::White,
+            Color::Red,
+            Color::Blue,
+            Color::Green
+        ];
 
         let mut gold_token = user.get_number_of_tokens(Color::Gold) as i8;
 
         for color in colors.iter() {
-            let token =  user.get_number_of_tokens(*color);
+            let token = user.get_number_of_tokens(*color);
             let jewelry = jewelries.get_jewelry(*color);
             let cost = self.get_cost(*color);
             self.estimate_gold_token(token + jewelry, cost, &mut gold_token);
