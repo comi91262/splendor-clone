@@ -1,13 +1,16 @@
 use crate::board::Board;
 use crate::color::Color;
+use crate::jewelry_box::JewelryBox;
 use crate::level::Level;
 use crate::user::User;
 
 use rand::rngs::ThreadRng;
 use rand::Rng;
+use std::collections::HashMap;
 
 pub struct Game {
     rng: ThreadRng,
+    rate: HashMap<Color, f32>,
 }
 
 // trait Repl {
@@ -18,8 +21,17 @@ pub struct Game {
 
 impl Game {
     pub fn create() -> Game {
+        let mut rate = HashMap::new();
+        rate.insert(Color::Black, 0.0);
+        rate.insert(Color::White, 0.0);
+        rate.insert(Color::Red, 0.0);
+        rate.insert(Color::Blue, 0.0);
+        rate.insert(Color::Green, 0.0);
+        rate.insert(Color::Gold, 0.0);
+
         Game {
             rng: rand::thread_rng(),
+            rate: rate,
         }
     }
     pub fn read(&mut self) -> u8 {
@@ -34,7 +46,7 @@ impl Game {
                 return result.to_string();
             }
             Err(error_msg) => {
-                println!("結果: {}", error_msg);
+                println!("{}", error_msg);
                 let input = self.read();
                 self.eval(input, user, board)
             }
@@ -98,7 +110,7 @@ impl Game {
     }
 
     pub fn print(&self, result: &str, user: &User) -> () {
-        println!("結果: {}", result);
+        println!("{}", result);
         println!("ユーザーステータス: {}", user);
     }
 
@@ -114,9 +126,8 @@ impl Game {
         user: &mut User,
         board: &mut Board,
     ) -> Result<&'static str, &'static str> {
-        println!("試行: カードの確保");
         if user.is_over_capacity_of_hand() {
-            Err("手札がいっぱいです")
+            Err("試行: カードの確保, 結果: 手札がいっぱいです")
         } else {
             match board.get_card(x, y) {
                 Some(card) => {
@@ -125,12 +136,12 @@ impl Game {
                     match board.get_token(Color::Gold) {
                     Some(token) => {
                         user.add_token(token);
-                        Ok("カードを確保しました")
+                        Ok("試行: カードの確保, 結果: カードを確保しました")
                     }
-                    None => Ok("カードを確保しましたが、金トークンは取得できませんでした"),
+                    None => Ok("試行: カードの確保, 結果: カードを確保しましたが、金トークンは取得できませんでした"),
                 }
                 }
-                None => Err("その場所にはもうカードがありません"),
+                None => Err("試行: カードの確保, 結果: その場所にはもうカードがありません"),
             }
         }
     }
@@ -142,22 +153,25 @@ impl Game {
         user: &mut User,
         board: &mut Board,
     ) -> Result<&'static str, &'static str> {
-        println!("試行: カードの購入");
         let is_available;
         match board.peek_card(x, y) {
             Some(card) => {
                 is_available = card.is_available(&user);
             }
-            None => return Err("そこにはカードがありません"),
+            None => {
+                return Err(
+                    "試行: カードの購入, 結果: そこにはカードがありません",
+                )
+            }
         }
 
         if is_available {
             let card = board.uget_card(x, y);
             user.pay(&card, board.get_token_stack());
             user.obtain(card);
-            Ok("カードを購入しました")
+            Ok("試行: カードの購入, 結果: カードを購入しました")
         } else {
-            Err("必要な宝石数が足りません")
+            Err("試行: カードの購入, 結果: 必要な宝石数が足りません")
         }
     }
 
@@ -167,15 +181,14 @@ impl Game {
         user: &mut User,
         board: &mut Board,
     ) -> Result<&'static str, &'static str> {
-        println!("試行: トークンを取得");
         if board.can_get_token(color) {
             for _ in 0..2 {
                 let token = board.uget_token(color);
                 user.add_token(token);
             }
-            Ok("トークンを取得しました")
+            Ok("試行: トークンを取得, 結果: トークンを取得しました")
         } else {
-            Err("残りのトークン数が4より少ないです")
+            Err("試行: トークンを取得, 結果: 残りのトークン数が4より少ないです")
         }
     }
 
@@ -187,7 +200,6 @@ impl Game {
         user: &mut User,
         board: &mut Board,
     ) -> Result<&'static str, &'static str> {
-        println!("試行: トークンを取得");
         match board.get_token(color1) {
             Some(token) => user.add_token(token),
             None => (),
@@ -200,7 +212,7 @@ impl Game {
             Some(token) => user.add_token(token),
             None => (),
         }
-        Ok("トークンを取得しました")
+        Ok("試行: トークンを取得, 結果: トークンを取得しました")
     }
 
     fn reserve_stack_card(
@@ -209,9 +221,8 @@ impl Game {
         user: &mut User,
         board: &mut Board,
     ) -> Result<&'static str, &'static str> {
-        println!("試行: スタックされたカード取得");
         if user.is_over_capacity_of_hand() {
-            Err("手札がいっぱいです")
+            Err("試行: スタックされたカード取得, 結果: 手札がいっぱいです")
         } else {
             match board.get_stack_card(level) {
                 Some(card) => {
@@ -219,12 +230,12 @@ impl Game {
                     match board.get_token(Color::Gold) {
                     Some(token) => {
                         user.add_token(token);
-                        Ok("カードを確保しました")
+                        Ok("試行: スタックされたカード取得, 結果: カードを確保しました")
                     }
-                    None => Ok("カードを確保しましたが、金トークンは取得できませんでした"),
+                    None => Ok("試行: スタックされたカード取得, 結果: カードを確保しましたが、金トークンは取得できませんでした"),
                 }
                 }
-                None => Err("指定のスタックにカードはありませんでした"),
+                None => Err("試行: スタックされたカード取得, 結果: 指定のスタックにカードはありませんでした"),
             }
         }
     }
@@ -235,21 +246,19 @@ impl Game {
         user: &mut User,
         board: &mut Board,
     ) -> Result<&'static str, &'static str> {
-        println!("試行: 確保したカードの購入");
-
         let is_available;
         match user.peek_card_in_hands(order) {
             Some(card) => is_available = card.is_available(&user),
-            None => return Err("そこにはカードがありません"),
+            None => return Err("試行: 確保したカードの購入, 結果: そこにはカードがありません"),
         }
         if is_available {
             let card = user.uget_card_in_hands(order);
             user.pay(&card, board.get_token_stack());
             user.obtain(card);
             user.remove_card_in_hands(order);
-            Ok("カードを購入しました")
+            Ok("試行: 確保したカードの購入, 結果: カードを購入しました")
         } else {
-            Err("必要な宝石数が足りません")
+            Err("試行: 確保したカードの購入, 結果: 必要な宝石数が足りません")
         }
     }
 
@@ -272,14 +281,122 @@ impl Game {
         }
     }
 
-    pub fn look(&self, step: u8, user: &User, board: &Board) -> u8 {
+    pub fn look(&mut self, step: u8, user: &User, board: &Board) -> u8 {
+        let mut rewards: Vec<f32> = vec![];
+
+        self.calc_rate(user, board);
+
+        // reserve_development_card
         for input in 1..13 {
             let mut user = user.clone();
             let mut board = board.clone();
             let result = self.eval_by_selection(input, &mut user, &mut board);
-            println!("{:?}", result);
+            match result {
+                Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                Err(_) => rewards.push(0.0),
+            };
         }
 
+        // buy_development_card
+        for input in 13..25 {
+            let mut user = user.clone();
+            let mut board = board.clone();
+            let result = self.eval_by_selection(input, &mut user, &mut board);
+            match result {
+                Ok(_) => {
+                    let card = user.get_acquired_cards().as_slice().last().unwrap();
+                    rewards.push(card.get_point() as f32);
+                } 
+                Err(_) => rewards.push(0.0),
+            };
+        }
+
+        // get 2 tokens
+        for input in 25..30 {
+            let mut user = user.clone();
+            let mut board = board.clone();
+            let result = self.eval_by_selection(input, &mut user, &mut board);
+            match result {
+                Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                Err(_) => rewards.push(0.0),
+            };
+        }
+
+        // get 3 tokens
+        for input in 30..40 {
+            let mut user = user.clone();
+            let mut board = board.clone();
+            let result = self.eval_by_selection(input, &mut user, &mut board);
+            match result {
+                Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                Err(_) => rewards.push(0.0),
+            };
+        }
+
+        // 
+        for input in 40..43 {
+            let mut user = user.clone();
+            let mut board = board.clone();
+            let result = self.eval_by_selection(input, &mut user, &mut board);
+            match result {
+                Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                Err(_) => rewards.push(0.0),
+            };
+        }
+        for input in 43..46 {
+            let mut user = user.clone();
+            let mut board = board.clone();
+            let result = self.eval_by_selection(input, &mut user, &mut board);
+            match result {
+                Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                Err(_) => rewards.push(0.0),
+            };
+        }
+
+        println!("{:?}", rewards);
         1
+    }
+
+    fn calc_rate(&mut self, user: &User, board: &Board) {
+        let mut required_cost = JewelryBox::create();
+        let mut owned = JewelryBox::create();
+        let colors = [
+            Color::Black,
+            Color::White,
+            Color::Red,
+            Color::Blue,
+            Color::Green,
+        ];
+
+        // 基礎点 = 0.3
+        // α = 1 - 所持宝石数 / 盤面の必要な宝石数
+        for row in 0..3 {
+            for col in 0..4 {
+                if let Some(card) = board.peek_card(row, col) {
+                    for color in colors.iter() {
+                        required_cost.add_jewelry(*color, card.get_cost(*color));
+                    }
+                }
+            }
+        }
+
+        for card in user.get_acquired_cards().iter() {
+            for color in colors.iter() {
+                owned.add_jewelry(*color, card.get_cost(*color));
+            }
+        }
+
+        let mut max_rate = 0.0;
+        for color in colors.iter() {
+            let rate = self.rate.get_mut(color).unwrap();
+            *rate = 0.3 * (1.0 - owned.get_jewelry(*color) as f32 / required_cost.get_jewelry(*color) as f32);
+
+            if max_rate <= *rate {
+                max_rate = *rate;
+            }
+        }
+
+        let gold_rate = self.rate.get_mut(&Color::Gold).unwrap();
+        *gold_rate = max_rate;
     }
 }

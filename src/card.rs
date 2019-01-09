@@ -75,7 +75,7 @@ impl Card {
             Color::White,
             Color::Red,
             Color::Blue,
-            Color::Green
+            Color::Green,
         ];
 
         let mut gold_token = user.get_number_of_tokens(Color::Gold) as i8;

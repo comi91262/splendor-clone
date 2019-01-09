@@ -28,13 +28,23 @@ impl JewelryBox {
             _ => unreachable!(),
         }
     }
-    pub fn add_jewelry(&mut self, color: Color) {
+    pub fn set_jewelry(&mut self, color: Color, jewelies: u8) {
         match color {
-            Color::Black => self.black += 1,
-            Color::White => self.white += 1,
-            Color::Red => self.red += 1,
-            Color::Blue => self.blue += 1,
-            Color::Green => self.green += 1,
+            Color::Black => self.black = jewelies,
+            Color::White => self.white = jewelies,
+            Color::Red => self.red = jewelies,
+            Color::Blue => self.blue = jewelies,
+            Color::Green => self.green = jewelies,
+            _ => unreachable!(),
+        }
+    }
+    pub fn add_jewelry(&mut self, color: Color, jewelies: u8) {
+        match color {
+            Color::Black => self.black += jewelies,
+            Color::White => self.white += jewelies,
+            Color::Red => self.red += jewelies,
+            Color::Blue => self.blue += jewelies,
+            Color::Green => self.green += jewelies,
             _ => unreachable!(),
         }
     }

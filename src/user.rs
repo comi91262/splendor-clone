@@ -119,7 +119,7 @@ impl User {
         let mut jewelries = JewelryBox::create();
 
         for card in self.get_acquired_cards().iter() {
-            jewelries.add_jewelry(card.get_color());
+            jewelries.add_jewelry(card.get_color(), card.get_point());
         }
 
         jewelries
