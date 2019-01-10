@@ -322,7 +322,7 @@ impl Game {
 
         self.calc_rate(user, board);
 
-        for input in 0..43 {
+        for input in 0..45 {
             let command = self.to_command(input);
             let mut user = user.clone();
             let mut board = board.clone();
@@ -337,38 +337,48 @@ impl Game {
                 BuyDevelopmentCard { x, y } => {
                     let output = self.buy_development_card(x, y, &mut user, &mut board);
                     match output {
-                        Ok(_) => {
-                            let card = user.get_acquired_cards().as_slice().last().unwrap();
-                            rewards.push(card.get_point() as f32);
-                        }
+                        Ok(_) => match user.get_acquired_cards().as_slice().last() {
+                            Some(card) => rewards.push(
+                                card.get_point() as f32 + self.rate.get(&card.get_color()).unwrap(),
+                            ),
+                            None => rewards.push(0.0),
+                        },
                         Err(_) => rewards.push(0.0),
                     };
                 }
                 SelectTwoSameTokens(c) => {
                     let result = self.select_two_same_tokens(c, &mut user, &mut board);
                     match result {
-                        Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                        Ok(_) => rewards.push(2.0 * *self.rate.get(&c).unwrap()),
                         Err(_) => rewards.push(0.0),
                     };
                 }
                 SelectThreeTokens(c1, c2, c3) => {
                     let result = self.select_three_tokens(c1, c2, c3, &mut user, &mut board);
+                    let value1 = self.rate.get(&c1).unwrap();
+                    let value2 = self.rate.get(&c2).unwrap();
+                    let value3 = self.rate.get(&c3).unwrap();
                     match result {
-                        Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                        Ok(_) => rewards.push(value1 + value2 + value3),
                         Err(_) => rewards.push(0.0),
                     };
                 }
                 ReserveStackCard(l) => {
                     let result = self.reserve_stack_card(l, &mut user, &mut board);
                     match result {
-                        Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                        Ok(_) => rewards.push(0.0),
                         Err(_) => rewards.push(0.0),
                     };
                 }
                 BuyReservedCard(index) => {
                     let result = self.buy_reserved_card(index, &mut user, &mut board);
                     match result {
-                        Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                        Ok(_) => match user.get_acquired_cards().as_slice().last() {
+                            Some(card) => rewards.push(
+                                card.get_point() as f32 + self.rate.get(&card.get_color()).unwrap(),
+                            ),
+                            None => rewards.push(0.0),
+                        },
                         Err(_) => rewards.push(0.0),
                     };
                 }
