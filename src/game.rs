@@ -13,6 +13,31 @@ pub struct Game {
     rate: HashMap<Color, f32>,
 }
 
+enum GameCommand {
+    ReserveDevelopmentCard {
+        x: u8,
+        y: u8,
+    },
+    BuyDevelopmentCard {
+        x: u8,
+        y: u8,
+    },
+    SelectTwoSameTokens {
+        color: Color,
+    },
+    SelectThreeTokens {
+        color1: Color,
+        color2: Color,
+        color3: Color,
+    },
+    ReserveStackCard {
+        level: Level,
+    },
+    BuyReservedCard {
+        index: u8,
+    },
+}
+
 // trait Repl {
 //     fn read(&mut self) -> u8;
 //     fn eval(&mut self, input: u8, user: &mut User, board: &mut Board) -> String;
@@ -50,6 +75,62 @@ impl Game {
                 let input = self.read();
                 self.eval(input, user, board)
             }
+        }
+    }
+
+    fn work_randomly(&self, input: u8) -> GameCommand {
+        use self::GameCommand::*;
+        struct Point {
+            x: u8,
+            y: u8,
+        };
+        let coordinate: [Point; 12] = [
+            Point { x: 0, y: 0 },
+            Point { x: 0, y: 1 },
+            Point { x: 0, y: 2 },
+            Point { x: 0, y: 3 },
+            Point { x: 1, y: 0 },
+            Point { x: 1, y: 1 },
+            Point { x: 1, y: 2 },
+            Point { x: 1, y: 3 },
+            Point { x: 2, y: 0 },
+            Point { x: 2, y: 1 },
+            Point { x: 2, y: 2 },
+            Point { x: 2, y: 3 },
+        ];
+        let color: [Color: 5] = [Color::Black, Color::White, ];
+
+        match input {
+            p @ 0...11 => ReserveDevelopmentCard {
+                x: coordinate[p].x,
+                y: coordinate[p].y,
+            },
+            p @ 12...23 => BuyDevelopmentCard {
+                x: coordinate[p - 12].x,
+                y: coordinate[p - 12].y,
+            },
+            c @ 24...29
+            25 => self.select_two_same_tokens(Color::White, user, board),
+            26 => self.select_two_same_tokens(Color::Black, user, board),
+            27 => self.select_two_same_tokens(Color::Red, user, board),
+            28 => self.select_two_same_tokens(Color::Blue, user, board),
+            29 => self.select_two_same_tokens(Color::Green, user, board),
+            30 => self.select_three_tokens(Color::Black, Color::White, Color::Red, user, board),
+            31 => self.select_three_tokens(Color::Black, Color::White, Color::Blue, user, board),
+            32 => self.select_three_tokens(Color::Black, Color::White, Color::Green, user, board),
+            33 => self.select_three_tokens(Color::Black, Color::Red, Color::Blue, user, board),
+            34 => self.select_three_tokens(Color::Black, Color::Red, Color::Green, user, board),
+            35 => self.select_three_tokens(Color::Black, Color::Blue, Color::Green, user, board),
+            36 => self.select_three_tokens(Color::White, Color::Red, Color::Blue, user, board),
+            37 => self.select_three_tokens(Color::White, Color::Red, Color::Green, user, board),
+            38 => self.select_three_tokens(Color::White, Color::Blue, Color::Green, user, board),
+            39 => self.select_three_tokens(Color::Red, Color::Blue, Color::Green, user, board),
+            40 => self.reserve_stack_card(Level::One, user, board),
+            41 => self.reserve_stack_card(Level::Two, user, board),
+            42 => self.reserve_stack_card(Level::Three, user, board),
+            43 => self.buy_reserved_card(0, user, board),
+            44 => self.buy_reserved_card(1, user, board),
+            45 => self.buy_reserved_card(2, user, board),
         }
     }
 
@@ -306,7 +387,7 @@ impl Game {
                 Ok(_) => {
                     let card = user.get_acquired_cards().as_slice().last().unwrap();
                     rewards.push(card.get_point() as f32);
-                } 
+                }
                 Err(_) => rewards.push(0.0),
             };
         }
@@ -333,7 +414,7 @@ impl Game {
             };
         }
 
-        // 
+        //
         for input in 40..43 {
             let mut user = user.clone();
             let mut board = board.clone();
@@ -389,7 +470,9 @@ impl Game {
         let mut max_rate = 0.0;
         for color in colors.iter() {
             let rate = self.rate.get_mut(color).unwrap();
-            *rate = 0.3 * (1.0 - owned.get_jewelry(*color) as f32 / required_cost.get_jewelry(*color) as f32);
+            *rate = 0.3
+                * (1.0
+                    - owned.get_jewelry(*color) as f32 / required_cost.get_jewelry(*color) as f32);
 
             if max_rate <= *rate {
                 max_rate = *rate;
