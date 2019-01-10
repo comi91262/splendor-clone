@@ -13,29 +13,13 @@ pub struct Game {
     rate: HashMap<Color, f32>,
 }
 
-enum GameCommand {
-    ReserveDevelopmentCard {
-        x: u8,
-        y: u8,
-    },
-    BuyDevelopmentCard {
-        x: u8,
-        y: u8,
-    },
-    SelectTwoSameTokens {
-        color: Color,
-    },
-    SelectThreeTokens {
-        color1: Color,
-        color2: Color,
-        color3: Color,
-    },
-    ReserveStackCard {
-        level: Level,
-    },
-    BuyReservedCard {
-        index: u8,
-    },
+pub enum GameCommand {
+    ReserveDevelopmentCard { x: u8, y: u8 },
+    BuyDevelopmentCard { x: u8, y: u8 },
+    SelectTwoSameTokens(Color),
+    SelectThreeTokens(Color, Color, Color),
+    ReserveStackCard(Level),
+    BuyReservedCard(u8),
 }
 
 // trait Repl {
@@ -59,11 +43,12 @@ impl Game {
             rate: rate,
         }
     }
-    pub fn read(&mut self) -> u8 {
-        self.rng.gen::<u8>() % 45 + 1
+    pub fn read(&mut self) -> GameCommand {
+        let random_value = self.rng.gen::<u8>() % 45;
+        self.to_command(random_value)
     }
 
-    pub fn eval(&mut self, input: u8, user: &mut User, board: &mut Board) -> String {
+    pub fn eval(&mut self, input: GameCommand, user: &mut User, board: &mut Board) -> String {
         let output = self.eval_by_selection(input, user, board);
 
         match output {
@@ -78,8 +63,11 @@ impl Game {
         }
     }
 
-    fn work_randomly(&self, input: u8) -> GameCommand {
+    fn to_command(&self, input: u8) -> GameCommand {
         use self::GameCommand::*;
+        use crate::color::Color::*;
+        use crate::level::Level::*;
+
         struct Point {
             x: u8,
             y: u8,
@@ -98,9 +86,24 @@ impl Game {
             Point { x: 2, y: 2 },
             Point { x: 2, y: 3 },
         ];
-        let color: [Color: 5] = [Color::Black, Color::White, ];
+        let color: [Color; 5] = [Black, White, Red, Blue, Green];
 
-        match input {
+        let color_set = [
+            (Black, White, Red),
+            (Black, White, Blue),
+            (Black, White, Green),
+            (Black, Red, Blue),
+            (Black, Red, Green),
+            (Black, Blue, Green),
+            (White, Red, Blue),
+            (White, Red, Green),
+            (White, Blue, Green),
+            (Red, Blue, Green),
+        ];
+
+        let level: [Level; 3] = [One, Two, Three];
+
+        match input as usize {
             p @ 0...11 => ReserveDevelopmentCard {
                 x: coordinate[p].x,
                 y: coordinate[p].y,
@@ -109,84 +112,35 @@ impl Game {
                 x: coordinate[p - 12].x,
                 y: coordinate[p - 12].y,
             },
-            c @ 24...29
-            25 => self.select_two_same_tokens(Color::White, user, board),
-            26 => self.select_two_same_tokens(Color::Black, user, board),
-            27 => self.select_two_same_tokens(Color::Red, user, board),
-            28 => self.select_two_same_tokens(Color::Blue, user, board),
-            29 => self.select_two_same_tokens(Color::Green, user, board),
-            30 => self.select_three_tokens(Color::Black, Color::White, Color::Red, user, board),
-            31 => self.select_three_tokens(Color::Black, Color::White, Color::Blue, user, board),
-            32 => self.select_three_tokens(Color::Black, Color::White, Color::Green, user, board),
-            33 => self.select_three_tokens(Color::Black, Color::Red, Color::Blue, user, board),
-            34 => self.select_three_tokens(Color::Black, Color::Red, Color::Green, user, board),
-            35 => self.select_three_tokens(Color::Black, Color::Blue, Color::Green, user, board),
-            36 => self.select_three_tokens(Color::White, Color::Red, Color::Blue, user, board),
-            37 => self.select_three_tokens(Color::White, Color::Red, Color::Green, user, board),
-            38 => self.select_three_tokens(Color::White, Color::Blue, Color::Green, user, board),
-            39 => self.select_three_tokens(Color::Red, Color::Blue, Color::Green, user, board),
-            40 => self.reserve_stack_card(Level::One, user, board),
-            41 => self.reserve_stack_card(Level::Two, user, board),
-            42 => self.reserve_stack_card(Level::Three, user, board),
-            43 => self.buy_reserved_card(0, user, board),
-            44 => self.buy_reserved_card(1, user, board),
-            45 => self.buy_reserved_card(2, user, board),
+            c @ 24...28 => SelectTwoSameTokens(color[c - 24]),
+            c @ 29...38 => SelectThreeTokens(
+                color_set[c - 29].0,
+                color_set[c - 29].1,
+                color_set[c - 29].2,
+            ),
+            l @ 39...41 => ReserveStackCard(level[l - 39]),
+            i @ 42...44 => BuyReservedCard((i - 42) as u8),
+            _ => unreachable!(),
         }
     }
 
     fn eval_by_selection(
         &self,
-        input: u8,
+        input: GameCommand,
         user: &mut User,
         board: &mut Board,
     ) -> Result<&'static str, &'static str> {
+        use self::GameCommand::*;
+
         match input {
-            1 => self.reserve_development_card(0, 0, user, board),
-            2 => self.reserve_development_card(0, 1, user, board),
-            3 => self.reserve_development_card(0, 2, user, board),
-            4 => self.reserve_development_card(0, 3, user, board),
-            5 => self.reserve_development_card(1, 0, user, board),
-            6 => self.reserve_development_card(1, 1, user, board),
-            7 => self.reserve_development_card(1, 2, user, board),
-            8 => self.reserve_development_card(1, 3, user, board),
-            9 => self.reserve_development_card(2, 0, user, board),
-            10 => self.reserve_development_card(2, 1, user, board),
-            11 => self.reserve_development_card(2, 2, user, board),
-            12 => self.reserve_development_card(2, 3, user, board),
-            13 => self.buy_development_card(0, 0, user, board),
-            14 => self.buy_development_card(0, 1, user, board),
-            15 => self.buy_development_card(0, 2, user, board),
-            16 => self.buy_development_card(0, 3, user, board),
-            17 => self.buy_development_card(1, 0, user, board),
-            18 => self.buy_development_card(1, 1, user, board),
-            19 => self.buy_development_card(1, 2, user, board),
-            20 => self.buy_development_card(1, 3, user, board),
-            21 => self.buy_development_card(2, 0, user, board),
-            22 => self.buy_development_card(2, 1, user, board),
-            23 => self.buy_development_card(2, 2, user, board),
-            24 => self.buy_development_card(2, 3, user, board),
-            25 => self.select_two_same_tokens(Color::White, user, board),
-            26 => self.select_two_same_tokens(Color::Black, user, board),
-            27 => self.select_two_same_tokens(Color::Red, user, board),
-            28 => self.select_two_same_tokens(Color::Blue, user, board),
-            29 => self.select_two_same_tokens(Color::Green, user, board),
-            30 => self.select_three_tokens(Color::Black, Color::White, Color::Red, user, board),
-            31 => self.select_three_tokens(Color::Black, Color::White, Color::Blue, user, board),
-            32 => self.select_three_tokens(Color::Black, Color::White, Color::Green, user, board),
-            33 => self.select_three_tokens(Color::Black, Color::Red, Color::Blue, user, board),
-            34 => self.select_three_tokens(Color::Black, Color::Red, Color::Green, user, board),
-            35 => self.select_three_tokens(Color::Black, Color::Blue, Color::Green, user, board),
-            36 => self.select_three_tokens(Color::White, Color::Red, Color::Blue, user, board),
-            37 => self.select_three_tokens(Color::White, Color::Red, Color::Green, user, board),
-            38 => self.select_three_tokens(Color::White, Color::Blue, Color::Green, user, board),
-            39 => self.select_three_tokens(Color::Red, Color::Blue, Color::Green, user, board),
-            40 => self.reserve_stack_card(Level::One, user, board),
-            41 => self.reserve_stack_card(Level::Two, user, board),
-            42 => self.reserve_stack_card(Level::Three, user, board),
-            43 => self.buy_reserved_card(0, user, board),
-            44 => self.buy_reserved_card(1, user, board),
-            45 => self.buy_reserved_card(2, user, board),
-            _ => unreachable!(),
+            ReserveDevelopmentCard { x, y } => self.reserve_development_card(x, y, user, board),
+            BuyDevelopmentCard { x, y } => self.buy_development_card(x, y, user, board),
+            SelectTwoSameTokens(color) => self.select_two_same_tokens(color, user, board),
+            SelectThreeTokens(color1, color2, color3) => {
+                self.select_three_tokens(color1, color2, color3, user, board)
+            }
+            ReserveStackCard(level) => self.reserve_stack_card(level, user, board),
+            BuyReservedCard(index) => self.buy_reserved_card(index, user, board),
         }
     }
 
@@ -363,75 +317,62 @@ impl Game {
     }
 
     pub fn look(&mut self, step: u8, user: &User, board: &Board) -> u8 {
+        use self::GameCommand::*;
         let mut rewards: Vec<f32> = vec![];
 
         self.calc_rate(user, board);
 
-        // reserve_development_card
-        for input in 1..13 {
+        for input in 0..43 {
+            let command = self.to_command(input);
             let mut user = user.clone();
             let mut board = board.clone();
-            let result = self.eval_by_selection(input, &mut user, &mut board);
-            match result {
-                Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
-                Err(_) => rewards.push(0.0),
-            };
-        }
-
-        // buy_development_card
-        for input in 13..25 {
-            let mut user = user.clone();
-            let mut board = board.clone();
-            let result = self.eval_by_selection(input, &mut user, &mut board);
-            match result {
-                Ok(_) => {
-                    let card = user.get_acquired_cards().as_slice().last().unwrap();
-                    rewards.push(card.get_point() as f32);
+            match command {
+                ReserveDevelopmentCard { x, y } => {
+                    let output = self.reserve_development_card(x, y, &mut user, &mut board);
+                    match output {
+                        Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                        Err(_) => rewards.push(0.0),
+                    };
                 }
-                Err(_) => rewards.push(0.0),
-            };
-        }
-
-        // get 2 tokens
-        for input in 25..30 {
-            let mut user = user.clone();
-            let mut board = board.clone();
-            let result = self.eval_by_selection(input, &mut user, &mut board);
-            match result {
-                Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
-                Err(_) => rewards.push(0.0),
-            };
-        }
-
-        // get 3 tokens
-        for input in 30..40 {
-            let mut user = user.clone();
-            let mut board = board.clone();
-            let result = self.eval_by_selection(input, &mut user, &mut board);
-            match result {
-                Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
-                Err(_) => rewards.push(0.0),
-            };
-        }
-
-        //
-        for input in 40..43 {
-            let mut user = user.clone();
-            let mut board = board.clone();
-            let result = self.eval_by_selection(input, &mut user, &mut board);
-            match result {
-                Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
-                Err(_) => rewards.push(0.0),
-            };
-        }
-        for input in 43..46 {
-            let mut user = user.clone();
-            let mut board = board.clone();
-            let result = self.eval_by_selection(input, &mut user, &mut board);
-            match result {
-                Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
-                Err(_) => rewards.push(0.0),
-            };
+                BuyDevelopmentCard { x, y } => {
+                    let output = self.buy_development_card(x, y, &mut user, &mut board);
+                    match output {
+                        Ok(_) => {
+                            let card = user.get_acquired_cards().as_slice().last().unwrap();
+                            rewards.push(card.get_point() as f32);
+                        }
+                        Err(_) => rewards.push(0.0),
+                    };
+                }
+                SelectTwoSameTokens(c) => {
+                    let result = self.select_two_same_tokens(c, &mut user, &mut board);
+                    match result {
+                        Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                        Err(_) => rewards.push(0.0),
+                    };
+                }
+                SelectThreeTokens(c1, c2, c3) => {
+                    let result = self.select_three_tokens(c1, c2, c3, &mut user, &mut board);
+                    match result {
+                        Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                        Err(_) => rewards.push(0.0),
+                    };
+                }
+                ReserveStackCard(l) => {
+                    let result = self.reserve_stack_card(l, &mut user, &mut board);
+                    match result {
+                        Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                        Err(_) => rewards.push(0.0),
+                    };
+                }
+                BuyReservedCard(index) => {
+                    let result = self.buy_reserved_card(index, &mut user, &mut board);
+                    match result {
+                        Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                        Err(_) => rewards.push(0.0),
+                    };
+                }
+            }
         }
 
         println!("{:?}", rewards);
