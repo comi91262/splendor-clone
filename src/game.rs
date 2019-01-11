@@ -7,6 +7,7 @@ use crate::user::User;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::collections::HashMap;
+use std::fmt;
 
 pub struct Game {
     rng: ThreadRng,
@@ -20,6 +21,43 @@ pub enum GameCommand {
     SelectThreeTokens(Color, Color, Color),
     ReserveStackCard(Level),
     BuyReservedCard(u8),
+}
+
+impl fmt::Display for GameCommand {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use self::GameCommand::*;
+        match self {
+            ReserveDevelopmentCard { x, y } => write!(f, "カードを確保する: {} {}", x, y),
+            BuyDevelopmentCard { x, y } => write!(f, "カードを購入する: {} {}", x, y),
+            SelectTwoSameTokens(c) => write!(f, "同じ色のトークンを取得: {}", c),
+            SelectThreeTokens(c1, c2, c3) => {
+                write!(f, "違う色のトークンを取得: {} {} {}", c1, c2, c3)
+            }
+            ReserveStackCard(l) => write!(f, "スタックからカードを確保 {:?} ", l),
+            BuyReservedCard(index) => {
+                write!(f, "手札のカードを購入する: {}枚目", index)
+            }
+        }
+    }
+}
+pub struct ActionReward {
+    pub action: GameCommand,
+    pub reward: f32,
+}
+
+impl ActionReward {
+    fn new(action: GameCommand, reward: f32) -> ActionReward {
+        ActionReward {
+            action: action,
+            reward: reward,
+        }
+    }
+}
+
+impl fmt::Debug for ActionReward {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Action: {} 報酬点: {}", self.action, self.reward)
+    }
 }
 
 // trait Repl {
@@ -318,8 +356,8 @@ impl Game {
 
     pub fn look(&mut self, step: u8, user: &User, board: &Board) -> u8 {
         use self::GameCommand::*;
-        let mut rewards: Vec<f32> = vec![];
 
+        let mut action_rewards: Vec<ActionReward> = vec![];
         self.calc_color_value(user, board);
 
         for input in 0..45 {
@@ -330,28 +368,35 @@ impl Game {
                 ReserveDevelopmentCard { x, y } => {
                     let output = self.reserve_development_card(x, y, &mut user, &mut board);
                     match output {
-                        Ok(_) => rewards.push(*self.color_value.get(&Color::Gold).unwrap()),
-                        Err(_) => rewards.push(0.0),
+                        Ok(_) => action_rewards.push(ActionReward::new(
+                            command,
+                            *self.color_value.get(&Color::Gold).unwrap(),
+                        )),
+                        Err(_) => (),
                     };
                 }
                 BuyDevelopmentCard { x, y } => {
                     let output = self.buy_development_card(x, y, &mut user, &mut board);
                     match output {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
-                            Some(card) => rewards.push(
+                            Some(card) => action_rewards.push(ActionReward::new(
+                                command,
                                 card.get_point() as f32
                                     + self.color_value.get(&card.get_color()).unwrap(),
-                            ),
-                            None => rewards.push(0.0),
+                            )),
+                            None => (),
                         },
-                        Err(_) => rewards.push(0.0),
+                        Err(_) => (),
                     };
                 }
                 SelectTwoSameTokens(c) => {
                     let result = self.select_two_same_tokens(c, &mut user, &mut board);
                     match result {
-                        Ok(_) => rewards.push(2.0 * *self.color_value.get(&c).unwrap()),
-                        Err(_) => rewards.push(0.0),
+                        Ok(_) => action_rewards.push(ActionReward::new(
+                            command,
+                            2.0 * *self.color_value.get(&c).unwrap(),
+                        )),
+                        Err(_) => (),
                     };
                 }
                 SelectThreeTokens(c1, c2, c3) => {
@@ -360,34 +405,36 @@ impl Game {
                     let value2 = self.color_value.get(&c2).unwrap();
                     let value3 = self.color_value.get(&c3).unwrap();
                     match result {
-                        Ok(_) => rewards.push(value1 + value2 + value3),
-                        Err(_) => rewards.push(0.0),
+                        Ok(_) => action_rewards
+                            .push(ActionReward::new(command, value1 + value2 + value3)),
+                        Err(_) => (),
                     };
                 }
                 ReserveStackCard(l) => {
                     let result = self.reserve_stack_card(l, &mut user, &mut board);
                     match result {
-                        Ok(_) => rewards.push(0.0),
-                        Err(_) => rewards.push(0.0),
+                        Ok(_) => action_rewards.push(ActionReward::new(command, 0.0)),
+                        Err(_) => (),
                     };
                 }
                 BuyReservedCard(index) => {
                     let result = self.buy_reserved_card(index, &mut user, &mut board);
                     match result {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
-                            Some(card) => rewards.push(
+                            Some(card) => action_rewards.push(ActionReward::new(
+                                command,
                                 card.get_point() as f32
                                     + self.color_value.get(&card.get_color()).unwrap(),
-                            ),
-                            None => rewards.push(0.0),
+                            )),
+                            None => (),
                         },
-                        Err(_) => rewards.push(0.0),
+                        Err(_) => (),
                     };
                 }
             }
         }
 
-        println!("{:?}", rewards);
+        println!("{:?}", action_rewards);
         1
     }
 
