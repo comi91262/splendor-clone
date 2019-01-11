@@ -9,7 +9,7 @@ pub struct JewelryBox {
 }
 
 impl JewelryBox {
-    pub fn create() -> JewelryBox {
+    pub fn new() -> JewelryBox {
         JewelryBox {
             black: 0,
             white: 0,

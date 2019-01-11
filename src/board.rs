@@ -69,7 +69,7 @@ impl fmt::Display for Board {
 }
 
 impl Board {
-    pub fn create() -> Board {
+    pub fn new() -> Board {
         let mut board = Board {
             board: Array2::<Card>::default((3, 4)),
             stack: HashMap::new(),

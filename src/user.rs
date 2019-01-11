@@ -34,7 +34,7 @@ ID: {} 勝利点: {}
     }
 }
 impl User {
-    pub fn create() -> User {
+    pub fn new() -> User {
         let mut user = User {
             id: 1,
             vp: 0,
@@ -116,7 +116,7 @@ impl User {
         self.hand.remove(order as usize);
     }
     pub fn get_jewelries(&self) -> JewelryBox {
-        let mut jewelries = JewelryBox::create();
+        let mut jewelries = JewelryBox::new();
 
         for card in self.get_acquired_cards().iter() {
             jewelries.add_jewelry(card.get_color(), card.get_point());
@@ -140,18 +140,18 @@ impl User {
             self.sub_token(color, new_cost);
             let stack = token_stack.get_mut(&color).unwrap();
             for _ in 0..new_cost {
-                stack.push(Token::create(color));
+                stack.push(Token::new(color));
             }
         } else {
             self.sub_token(color, tokens);
             let stack = token_stack.get_mut(&color).unwrap();
             for _ in 0..tokens {
-                stack.push(Token::create(color))
+                stack.push(Token::new(color))
             }
             self.sub_token(Color::Gold, new_cost - tokens);
             let stack = token_stack.get_mut(&Color::Gold).unwrap();
             for _ in 0..new_cost - tokens {
-                stack.push(Token::create(Color::Gold));
+                stack.push(Token::new(Color::Gold));
             }
         }
     }

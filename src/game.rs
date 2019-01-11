@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 pub struct Game {
     rng: ThreadRng,
-    rate: HashMap<Color, f32>,
+    color_value: HashMap<Color, f32>,
 }
 
 pub enum GameCommand {
@@ -29,18 +29,18 @@ pub enum GameCommand {
 // }
 
 impl Game {
-    pub fn create() -> Game {
-        let mut rate = HashMap::new();
-        rate.insert(Color::Black, 0.0);
-        rate.insert(Color::White, 0.0);
-        rate.insert(Color::Red, 0.0);
-        rate.insert(Color::Blue, 0.0);
-        rate.insert(Color::Green, 0.0);
-        rate.insert(Color::Gold, 0.0);
+    pub fn new() -> Game {
+        let mut color_value = HashMap::new();
+        color_value.insert(Color::Black, 0.0);
+        color_value.insert(Color::White, 0.0);
+        color_value.insert(Color::Red, 0.0);
+        color_value.insert(Color::Blue, 0.0);
+        color_value.insert(Color::Green, 0.0);
+        color_value.insert(Color::Gold, 0.0);
 
         Game {
             rng: rand::thread_rng(),
-            rate: rate,
+            color_value: color_value,
         }
     }
     pub fn read(&mut self) -> GameCommand {
@@ -320,7 +320,7 @@ impl Game {
         use self::GameCommand::*;
         let mut rewards: Vec<f32> = vec![];
 
-        self.calc_rate(user, board);
+        self.calc_color_value(user, board);
 
         for input in 0..45 {
             let command = self.to_command(input);
@@ -330,7 +330,7 @@ impl Game {
                 ReserveDevelopmentCard { x, y } => {
                     let output = self.reserve_development_card(x, y, &mut user, &mut board);
                     match output {
-                        Ok(_) => rewards.push(*self.rate.get(&Color::Gold).unwrap()),
+                        Ok(_) => rewards.push(*self.color_value.get(&Color::Gold).unwrap()),
                         Err(_) => rewards.push(0.0),
                     };
                 }
@@ -339,7 +339,8 @@ impl Game {
                     match output {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
                             Some(card) => rewards.push(
-                                card.get_point() as f32 + self.rate.get(&card.get_color()).unwrap(),
+                                card.get_point() as f32
+                                    + self.color_value.get(&card.get_color()).unwrap(),
                             ),
                             None => rewards.push(0.0),
                         },
@@ -349,15 +350,15 @@ impl Game {
                 SelectTwoSameTokens(c) => {
                     let result = self.select_two_same_tokens(c, &mut user, &mut board);
                     match result {
-                        Ok(_) => rewards.push(2.0 * *self.rate.get(&c).unwrap()),
+                        Ok(_) => rewards.push(2.0 * *self.color_value.get(&c).unwrap()),
                         Err(_) => rewards.push(0.0),
                     };
                 }
                 SelectThreeTokens(c1, c2, c3) => {
                     let result = self.select_three_tokens(c1, c2, c3, &mut user, &mut board);
-                    let value1 = self.rate.get(&c1).unwrap();
-                    let value2 = self.rate.get(&c2).unwrap();
-                    let value3 = self.rate.get(&c3).unwrap();
+                    let value1 = self.color_value.get(&c1).unwrap();
+                    let value2 = self.color_value.get(&c2).unwrap();
+                    let value3 = self.color_value.get(&c3).unwrap();
                     match result {
                         Ok(_) => rewards.push(value1 + value2 + value3),
                         Err(_) => rewards.push(0.0),
@@ -375,7 +376,8 @@ impl Game {
                     match result {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
                             Some(card) => rewards.push(
-                                card.get_point() as f32 + self.rate.get(&card.get_color()).unwrap(),
+                                card.get_point() as f32
+                                    + self.color_value.get(&card.get_color()).unwrap(),
                             ),
                             None => rewards.push(0.0),
                         },
@@ -389,9 +391,9 @@ impl Game {
         1
     }
 
-    fn calc_rate(&mut self, user: &User, board: &Board) {
-        let mut required_cost = JewelryBox::create();
-        let mut owned = JewelryBox::create();
+    fn calc_color_value(&mut self, user: &User, board: &Board) {
+        let mut required_cost = JewelryBox::new();
+        let mut owned = JewelryBox::new();
         let colors = [
             Color::Black,
             Color::White,
@@ -418,19 +420,19 @@ impl Game {
             }
         }
 
-        let mut max_rate = 0.0;
+        let mut max_color_value = 0.0;
         for color in colors.iter() {
-            let rate = self.rate.get_mut(color).unwrap();
-            *rate = 0.3
+            let color_value = self.color_value.get_mut(color).unwrap();
+            *color_value = 0.3
                 * (1.0
                     - owned.get_jewelry(*color) as f32 / required_cost.get_jewelry(*color) as f32);
 
-            if max_rate <= *rate {
-                max_rate = *rate;
+            if max_color_value <= *color_value {
+                max_color_value = *color_value;
             }
         }
 
-        let gold_rate = self.rate.get_mut(&Color::Gold).unwrap();
-        *gold_rate = max_rate;
+        let gold_color_value = self.color_value.get_mut(&Color::Gold).unwrap();
+        *gold_color_value = max_color_value;
     }
 }

@@ -18,12 +18,12 @@ use crate::user::User;
 use std::process;
 
 fn main() {
-    let mut game = Game::create();
-    let mut board = Board::create();
-    let mut user = User::create();
+    let mut game = Game::new();
+    let mut board = Board::new();
+    let mut user = User::new();
     let mut turn = 1;
 
-    for _ in 0..1 {
+    loop {
         println!("{}手番目\n{}", turn, board);
 
         game.look(1, &user, &board);

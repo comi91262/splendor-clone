@@ -22,7 +22,7 @@ impl fmt::Display for Token {
 }
 
 impl Token {
-    pub fn create(color: Color) -> Token {
+    pub fn new(color: Color) -> Token {
         Token { color: color }
     }
     pub fn get_color(self) -> Color {
