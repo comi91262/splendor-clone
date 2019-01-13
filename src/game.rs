@@ -14,6 +14,7 @@ pub struct Game {
     color_value: HashMap<Color, f32>,
 }
 
+#[derive(Clone)]
 pub enum GameCommand {
     ReserveDevelopmentCard { x: u8, y: u8 },
     BuyDevelopmentCard { x: u8, y: u8 },
@@ -27,8 +28,8 @@ impl fmt::Display for GameCommand {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use self::GameCommand::*;
         match self {
-            ReserveDevelopmentCard { x, y } => write!(f, "カードを確保する: {} {}", x, y),
-            BuyDevelopmentCard { x, y } => write!(f, "カードを購入する: {} {}", x, y),
+            ReserveDevelopmentCard { x, y } => write!(f, "カードを確保する({}, {})", x, y),
+            BuyDevelopmentCard { x, y } => write!(f, "カードを購入する({}, {})", x, y),
             SelectTwoSameTokens(c) => write!(f, "同じ色のトークンを取得: {}", c),
             SelectThreeTokens(c1, c2, c3) => {
                 write!(f, "違う色のトークンを取得: {} {} {}", c1, c2, c3)
@@ -273,19 +274,25 @@ impl Game {
         user: &mut User,
         board: &mut Board,
     ) -> Result<&'static str, &'static str> {
-        match board.get_token(color1) {
-            Some(token) => user.add_token(token),
-            None => (),
+        let mut count = 0;
+        if let Some(token) = board.get_token(color1) {
+            user.add_token(token);
+            count = count + 1;
         }
-        match board.get_token(color2) {
-            Some(token) => user.add_token(token),
-            None => (),
+        if let Some(token) = board.get_token(color2) {
+            user.add_token(token);
+            count = count + 1;
         }
-        match board.get_token(color3) {
-            Some(token) => user.add_token(token),
-            None => (),
+        if let Some(token) = board.get_token(color3) {
+            user.add_token(token);
+            count = count + 1;
         }
-        Ok("試行: トークンを取得, 結果: トークンを取得しました")
+
+        if count == 0 {
+            Err("試行: トークンを取得, 結果: 取得できるトークンがありません")
+        } else {
+            Ok("試行: トークンを取得, 結果: トークンを取得しました")
+        }
     }
 
     fn reserve_stack_card(
@@ -354,7 +361,7 @@ impl Game {
         }
     }
 
-    pub fn look(&mut self, step: u8, user: &User, board: &Board) -> u8 {
+    pub fn look(&mut self, step: u8, user: &User, board: &Board) -> GameCommand {
         use self::GameCommand::*;
 
         let mut action_rewards: Vec<ActionReward> = vec![];
@@ -400,13 +407,30 @@ impl Game {
                     };
                 }
                 SelectThreeTokens(c1, c2, c3) => {
+                    let t1 = user.get_number_of_tokens(c1);
+                    let t2 = user.get_number_of_tokens(c2);
+                    let t3 = user.get_number_of_tokens(c3);
+
                     let result = self.select_three_tokens(c1, c2, c3, &mut user, &mut board);
-                    let value1 = self.color_value.get(&c1).unwrap();
-                    let value2 = self.color_value.get(&c2).unwrap();
-                    let value3 = self.color_value.get(&c3).unwrap();
+
+                    let t1 = user.get_number_of_tokens(c1) - t1;
+                    let t2 = user.get_number_of_tokens(c2) - t2;
+                    let t3 = user.get_number_of_tokens(c3) - t3;
+
+                    let mut total = 0.0;
+
+                    if t1 > 0 {
+                        total += self.color_value.get(&c1).unwrap();
+                    }
+                    if t2 > 0 {
+                        total += self.color_value.get(&c2).unwrap();
+                    }
+                    if t3 > 0 {
+                        total += self.color_value.get(&c3).unwrap();
+                    }
+
                     match result {
-                        Ok(_) => action_rewards
-                            .push(ActionReward::new(command, value1 + value2 + value3)),
+                        Ok(_) => action_rewards.push(ActionReward::new(command, total)),
                         Err(_) => (),
                     };
                 }
@@ -434,8 +458,22 @@ impl Game {
             }
         }
 
-        println!("{:?}", action_rewards);
-        1
+        let mut max_value = 0.0;
+        let mut command = GameCommand::ReserveDevelopmentCard { x: 0, y: 0 };
+
+        for e in action_rewards.iter() {
+            println!("{:?}", e);
+            match e {
+                ActionReward { action, reward } => {
+                    if *reward > max_value {
+                        command = action.clone();
+                        max_value = *reward;
+                    }
+                }
+            }
+        }
+
+        command
     }
 
     fn calc_color_value(&mut self, user: &User, board: &Board) {
