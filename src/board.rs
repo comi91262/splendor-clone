@@ -13,6 +13,21 @@ use std::io::{BufRead, BufReader};
 
 const LIMIT_OF_GETTING_SAME_TOKEN: u8 = 4;
 
+const COORDINATE: [(u8, u8); 12] = [
+    (0, 0),
+    (0, 1),
+    (0, 2),
+    (0, 3),
+    (1, 0),
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (2, 0),
+    (2, 1),
+    (2, 2),
+    (2, 3),
+];
+
 #[derive(Clone)]
 pub struct Board {
     board: Array2<Card>,
@@ -92,38 +107,17 @@ impl Board {
                 Card { level: _, .. } => unreachable!(),
             }
         }
+        for (x, y) in COORDINATE.iter() {
+            board.refill(*x, *y);
+        }
 
-        board.refill(0, 0);
-        board.refill(0, 1);
-        board.refill(0, 2);
-        board.refill(0, 3);
-        board.refill(1, 0);
-        board.refill(1, 1);
-        board.refill(1, 2);
-        board.refill(1, 3);
-        board.refill(2, 0);
-        board.refill(2, 1);
-        board.refill(2, 2);
-        board.refill(2, 3);
-
-        board
-            .token_stack
-            .insert(Color::Black, Token::create_stack(Color::Black));
-        board
-            .token_stack
-            .insert(Color::White, Token::create_stack(Color::White));
-        board
-            .token_stack
-            .insert(Color::Red, Token::create_stack(Color::Red));
-        board
-            .token_stack
-            .insert(Color::Blue, Token::create_stack(Color::Blue));
-        board
-            .token_stack
-            .insert(Color::Green, Token::create_stack(Color::Green));
-        board
-            .token_stack
-            .insert(Color::Gold, Token::create_stack(Color::Gold));
+        use crate::color::Color::*;
+        let colors = [Black, White, Red, Blue, Green, Gold];
+        for color in colors.iter() {
+            board
+                .token_stack
+                .insert(*color, Token::create_stack(*color));
+        }
 
         board.noble_tile = NobleTile::create_stack();
 
