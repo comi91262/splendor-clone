@@ -34,24 +34,26 @@ ID: {} 勝利点: {}
     }
 }
 impl User {
-    pub fn new() -> User {
+    pub fn new(id: u8) -> User {
         let mut user = User {
-            id: 1,
+            id: id,
             vp: 0,
             hand: vec![],
             acquired_card: vec![],
             token_stack: HashMap::new(),
         };
-        user.token_stack.insert(Color::Black, vec![]);
-        user.token_stack.insert(Color::White, vec![]);
-        user.token_stack.insert(Color::Red, vec![]);
-        user.token_stack.insert(Color::Blue, vec![]);
-        user.token_stack.insert(Color::Green, vec![]);
-        user.token_stack.insert(Color::Gold, vec![]);
+
+        use crate::color::Color::*;
+        let colors = [Black, White, Red, Blue, Green, Gold];
+        for color in colors.iter() {
+            user.token_stack.insert(*color, vec![]);
+        }
 
         user
     }
-
+    pub fn get_id(&self) -> u8 {
+        self.id
+    }
     pub fn get_vp(&self) -> u8 {
         self.vp
     }
@@ -158,6 +160,22 @@ impl User {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::User;
+    use crate::color::Color;
+
+    #[test]
+    fn test_new() {
+        let user = User::new(1);
+        assert_eq!(user.id, 1);
+        assert_eq!(user.vp, 0);
+        assert_eq!(user.hand.len(), 0);
+        assert_eq!(user.acquired_card.len(), 0);
+        assert_eq!(user.token_stack.get(&Color::Gold).unwrap().len(), 0);
+    }
+
+}
 // use std::cell::RefCell;
 // pub struct UserMock {
 //     user: RefCell<Vec<User>>

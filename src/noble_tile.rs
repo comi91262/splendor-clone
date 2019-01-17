@@ -3,8 +3,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 use crate::color::Color;
-use crate::jewelry_box::JewelryBox;
 use crate::jewelries::JEWELRIES;
+use crate::jewelry_box::JewelryBox;
 
 const MAX_NUMBER_OF_TILES: u8 = 4;
 

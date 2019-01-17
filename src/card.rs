@@ -1,6 +1,6 @@
 use crate::color::Color;
-use crate::user::User;
 use crate::jewelries::JEWELRIES;
+use crate::user::User;
 
 use std::fmt;
 

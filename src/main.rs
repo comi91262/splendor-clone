@@ -5,8 +5,8 @@ pub mod board;
 pub mod card;
 pub mod color;
 mod game;
-pub mod jewelry_box;
 pub mod jewelries;
+pub mod jewelry_box;
 pub mod level;
 pub mod noble_tile;
 pub mod token;
@@ -16,27 +16,27 @@ use crate::board::Board;
 use crate::game::Game;
 use crate::user::User;
 
-use std::process;
-
 fn main() {
     let mut game = Game::new();
     let mut board = Board::new();
-    let mut user = User::new();
+    let mut user1 = User::new(1);
+    let mut user2 = User::new(2);
     let mut turn = 1;
 
     loop {
         println!("{}手番目\n{}", turn, board);
 
-        game.look(1, &user, &board);
-        let command = game.read();
-        let result = game.eval(command, &mut user, &mut board);
+        let command = game.look(1, &user1, &board);
+        let result = game.eval(command, &mut user1, &mut board);
+        game.visit(&mut user1, &mut board);
+        game.is_over(&user1);
+        game.print(&result, &user1);
 
-        game.visit(&mut user, &mut board);
-        if game.is_over(&user) {
-            game.print(&"ゲーム終了しました", &user);
-            process::exit(1);
-        }
-        game.print(&result, &user);
+        let command = game.read();
+        let result = game.eval(command, &mut user2, &mut board);
+        game.visit(&mut user2, &mut board);
+        game.is_over(&user2);
+        game.print(&result, &user2);
 
         turn = turn + 1;
     }

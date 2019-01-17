@@ -1,14 +1,17 @@
 use crate::board::Board;
 use crate::color::Color;
+use crate::jewelries::JEWELRIES;
 use crate::jewelry_box::JewelryBox;
 use crate::level::Level;
 use crate::user::User;
-use crate::jewelries::JEWELRIES;
 
 use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::collections::HashMap;
 use std::fmt;
+use std::process;
+
+const VP_TO_END: u8 = 15;
 
 pub struct Game {
     rng: ThreadRng,
@@ -188,9 +191,11 @@ impl Game {
         println!("ユーザーステータス: {}", user);
     }
 
-    pub fn is_over(&self, user: &User) -> bool {
-        // TODO magic number
-        user.get_vp() >= 15
+    pub fn is_over(&self, user: &User) {
+        if user.get_vp() >= VP_TO_END {
+            self.print(&format!("ゲーム終了しました. プレイヤー{}が勝利しました", user.get_id()), &user);
+            process::exit(1);
+        }
     }
 
     fn reserve_development_card(
