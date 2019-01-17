@@ -16,6 +16,8 @@ use crate::board::Board;
 use crate::game::Game;
 use crate::user::User;
 
+use std::time::Instant;
+
 fn main() {
     let mut game = Game::new();
     let mut board = Board::new();
@@ -24,6 +26,7 @@ fn main() {
     let mut turn = 1;
 
     loop {
+        let start = Instant::now();
         println!("{}手番目\n{}", turn, board);
 
         let command = game.look(1, &user1, &board);
@@ -39,5 +42,11 @@ fn main() {
         game.print(&result, &user2);
 
         turn = turn + 1;
+        let end = start.elapsed();
+        println!(
+            "ターン経過時間: {}.{:03}秒",
+            end.as_secs(),
+            end.subsec_nanos() / 1_000_000
+        );
     }
 }
