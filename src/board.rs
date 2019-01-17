@@ -92,21 +92,33 @@ impl Board {
             noble_tile: vec![],
         };
 
-        board.stack.insert(Level::One, vec![]);
-        board.stack.insert(Level::Two, vec![]);
-        board.stack.insert(Level::Three, vec![]);
+        let mut level1_stack = vec![];
+        let mut level2_stack = vec![];
+        let mut level3_stack = vec![];
 
         for result in BufReader::new(File::open("card.json").unwrap()).lines() {
             let l = result.unwrap();
             let card: Card = serde_json::from_str(&l).unwrap();
 
             match card {
-                Card { level: 1, .. } => board.stack.get_mut(&Level::One).unwrap().push(card),
-                Card { level: 2, .. } => board.stack.get_mut(&Level::Two).unwrap().push(card),
-                Card { level: 3, .. } => board.stack.get_mut(&Level::Three).unwrap().push(card),
+                Card { level: 1, .. } => level1_stack.push(card),
+                Card { level: 2, .. } => level2_stack.push(card),
+                Card { level: 3, .. } => level3_stack.push(card),
                 Card { level: _, .. } => unreachable!(),
             }
         }
+
+        // シャッフルする
+        use rand::seq::SliceRandom;
+        let mut rng = rand::thread_rng();
+        level1_stack.shuffle(&mut rng);
+        level2_stack.shuffle(&mut rng);
+        level3_stack.shuffle(&mut rng);
+
+        board.stack.insert(Level::One, level1_stack);
+        board.stack.insert(Level::Two, level2_stack);
+        board.stack.insert(Level::Three, level3_stack);
+
         for (x, y) in COORDINATE.iter() {
             board.refill(*x, *y);
         }
