@@ -6,6 +6,7 @@ pub mod card;
 pub mod color;
 mod game;
 pub mod jewelry_box;
+pub mod jewelries;
 pub mod level;
 pub mod noble_tile;
 pub mod token;

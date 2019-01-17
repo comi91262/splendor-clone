@@ -3,6 +3,7 @@ use crate::color::Color;
 use crate::jewelry_box::JewelryBox;
 use crate::level::Level;
 use crate::user::User;
+use crate::jewelries::JEWELRIES;
 
 use rand::rngs::ThreadRng;
 use rand::Rng;
@@ -125,7 +126,6 @@ impl Game {
             Point { x: 2, y: 2 },
             Point { x: 2, y: 3 },
         ];
-        let color: [Color; 5] = [Black, White, Red, Blue, Green];
 
         let color_set = [
             (Black, White, Red),
@@ -151,7 +151,7 @@ impl Game {
                 x: coordinate[p - 12].x,
                 y: coordinate[p - 12].y,
             },
-            c @ 24...28 => SelectTwoSameTokens(color[c - 24]),
+            c @ 24...28 => SelectTwoSameTokens(JEWELRIES[c - 24]),
             c @ 29...38 => SelectThreeTokens(
                 color_set[c - 29].0,
                 color_set[c - 29].1,
@@ -479,20 +479,13 @@ impl Game {
     fn calc_color_value(&mut self, user: &User, board: &Board) {
         let mut required_cost = JewelryBox::new();
         let mut owned = JewelryBox::new();
-        let colors = [
-            Color::Black,
-            Color::White,
-            Color::Red,
-            Color::Blue,
-            Color::Green,
-        ];
 
         // 基礎点 = 0.3
         // α = 1 - 所持宝石数 / 盤面の必要な宝石数
         for row in 0..3 {
             for col in 0..4 {
                 if let Some(card) = board.peek_card(row, col) {
-                    for color in colors.iter() {
+                    for color in JEWELRIES.iter() {
                         required_cost.add_jewelry(*color, card.get_cost(*color));
                     }
                 }
@@ -500,13 +493,13 @@ impl Game {
         }
 
         for card in user.get_acquired_cards().iter() {
-            for color in colors.iter() {
+            for color in JEWELRIES.iter() {
                 owned.add_jewelry(*color, card.get_cost(*color));
             }
         }
 
         let mut max_color_value = 0.0;
-        for color in colors.iter() {
+        for color in JEWELRIES.iter() {
             let color_value = self.color_value.get_mut(color).unwrap();
             *color_value = 0.3
                 * (1.0

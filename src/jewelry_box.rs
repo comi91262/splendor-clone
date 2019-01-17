@@ -19,32 +19,35 @@ impl JewelryBox {
         }
     }
     pub fn get_jewelry(&self, color: Color) -> u8 {
+        use crate::color::Color::*;
         match color {
-            Color::Black => self.black,
-            Color::White => self.white,
-            Color::Red => self.red,
-            Color::Blue => self.blue,
-            Color::Green => self.green,
+            Black => self.black,
+            White => self.white,
+            Red => self.red,
+            Blue => self.blue,
+            Green => self.green,
             _ => unreachable!(),
         }
     }
     pub fn set_jewelry(&mut self, color: Color, jewelies: u8) {
+        use crate::color::Color::*;
         match color {
-            Color::Black => self.black = jewelies,
-            Color::White => self.white = jewelies,
-            Color::Red => self.red = jewelies,
-            Color::Blue => self.blue = jewelies,
-            Color::Green => self.green = jewelies,
+            Black => self.black = jewelies,
+            White => self.white = jewelies,
+            Red => self.red = jewelies,
+            Blue => self.blue = jewelies,
+            Green => self.green = jewelies,
             _ => unreachable!(),
         }
     }
     pub fn add_jewelry(&mut self, color: Color, jewelies: u8) {
+        use crate::color::Color::*;
         match color {
-            Color::Black => self.black += jewelies,
-            Color::White => self.white += jewelies,
-            Color::Red => self.red += jewelies,
-            Color::Blue => self.blue += jewelies,
-            Color::Green => self.green += jewelies,
+            Black => self.black += jewelies,
+            White => self.white += jewelies,
+            Red => self.red += jewelies,
+            Blue => self.blue += jewelies,
+            Green => self.green += jewelies,
             _ => unreachable!(),
         }
     }

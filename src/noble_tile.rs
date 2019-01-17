@@ -4,6 +4,7 @@ use std::io::{BufRead, BufReader};
 
 use crate::color::Color;
 use crate::jewelry_box::JewelryBox;
+use crate::jewelries::JEWELRIES;
 
 const MAX_NUMBER_OF_TILES: u8 = 4;
 
@@ -70,15 +71,7 @@ impl NobleTile {
         self.point
     }
     pub fn can_visit(&self, jewelries: &JewelryBox) -> bool {
-        let colors = [
-            Color::Black,
-            Color::White,
-            Color::Red,
-            Color::Blue,
-            Color::Green,
-        ];
-
-        for color in colors.iter() {
+        for color in JEWELRIES.iter() {
             if self.get_bonus(*color) > jewelries.get_jewelry(*color) {
                 return false;
             }
@@ -87,12 +80,13 @@ impl NobleTile {
         return true;
     }
     fn get_bonus(&self, color: Color) -> u8 {
+        use crate::color::Color::*;
         match color {
-            Color::Black => self.black_bonus,
-            Color::White => self.white_bonus,
-            Color::Red => self.red_bonus,
-            Color::Blue => self.blue_bonus,
-            Color::Green => self.green_bonus,
+            Black => self.black_bonus,
+            White => self.white_bonus,
+            Red => self.red_bonus,
+            Blue => self.blue_bonus,
+            Green => self.green_bonus,
             _ => unreachable!(),
         }
     }

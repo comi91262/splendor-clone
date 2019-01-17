@@ -1,5 +1,6 @@
 use crate::color::Color;
 use crate::user::User;
+use crate::jewelries::JEWELRIES;
 
 use std::fmt;
 
@@ -70,17 +71,10 @@ impl Card {
     }
     pub fn is_available(&self, user: &User) -> bool {
         let jewelries = user.get_jewelries();
-        let colors = [
-            Color::Black,
-            Color::White,
-            Color::Red,
-            Color::Blue,
-            Color::Green,
-        ];
 
         let mut gold_token = user.get_number_of_tokens(Color::Gold) as i8;
 
-        for color in colors.iter() {
+        for color in JEWELRIES.iter() {
             let token = user.get_number_of_tokens(*color);
             let jewelry = jewelries.get_jewelry(*color);
             let cost = self.get_cost(*color);
@@ -95,13 +89,14 @@ impl Card {
     }
 
     pub fn get_cost(&self, color: Color) -> u8 {
+        use crate::color::Color::*;
         match color {
-            Color::Black => self.cost_black,
-            Color::White => self.cost_white,
-            Color::Red => self.cost_red,
-            Color::Blue => self.cost_blue,
-            Color::Green => self.cost_green,
-            Color::Gold => unreachable!(),
+            Black => self.cost_black,
+            White => self.cost_white,
+            Red => self.cost_red,
+            Blue => self.cost_blue,
+            Green => self.cost_green,
+            Gold => unreachable!(),
         }
     }
 

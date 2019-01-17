@@ -58,12 +58,6 @@ impl User {
     pub fn add_vp(&mut self, point: u8) {
         self.vp += point;
     }
-    fn _set_vp(&mut self, vp: u8) {
-        self.vp = vp
-    }
-    fn _get_id(&self) -> u8 {
-        self.id
-    }
     pub fn get_number_of_tokens(&self, color: Color) -> u8 {
         let stack = self.token_stack.get(&color).unwrap();
         stack.len() as u8
