@@ -100,19 +100,15 @@ impl Game {
         println!("ユーザーステータス: {}", user);
     }
 
-    pub fn is_over(&self, user: &User) -> bool {
-        if user.get_vp() >= VP_TO_END {
-            self.print(
-                &format!(
-                    "ゲーム終了しました. プレイヤー{}が勝利しました",
-                    user.get_id()
-                ),
-                &user,
-            );
-            true
-        } else {
-            false
+    pub fn is_over(&self, users: Vec<&User>) -> bool {
+        let mut result = false;
+        for user in users.iter() {
+            if user.get_vp() >= VP_TO_END {
+                result = true;
+                println!("プレイヤー{}が勝利しました", user.get_id());
+            }
         }
+        result
     }
 
     pub fn look(&mut self, step: u8, user: &User, board: &Board) -> GameCommand {
@@ -142,7 +138,8 @@ impl Game {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
                             Some(card) => action_rewards.push(ActionReward::new(
                                 command,
-                                card.get_point() as f32 + self.color_value.get(&card.get_color()).unwrap(),
+                                card.get_point() as f32
+                                    + self.color_value.get(&card.get_color()).unwrap(),
                             )),
                             None => (),
                         },
@@ -200,7 +197,8 @@ impl Game {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
                             Some(card) => action_rewards.push(ActionReward::new(
                                 command,
-                                card.get_point() as f32 + self.color_value.get(&card.get_color()).unwrap(),
+                                card.get_point() as f32
+                                    + self.color_value.get(&card.get_color()).unwrap(),
                             )),
                             None => (),
                         },

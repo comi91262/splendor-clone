@@ -32,32 +32,27 @@ fn main() {
 
         let command = game.look(1, &user1, &board);
         let result = game.eval(command, &mut user1, &mut board);
-        if game.is_over(&user1) {
-            let end = start.elapsed().subsec_nanos();
-            if end > max_duration {
-                max_duration = end;
-            }
-            break;
-        }
         game.print(&result, &user1);
 
         let command = game.read();
         let result = game.eval(command, &mut user2, &mut board);
-        if game.is_over(&user2) {
-            let end = start.elapsed().subsec_nanos();
-            if end > max_duration {
-                max_duration = end;
-            }
-            break;
-        }
         game.print(&result, &user2);
 
-        turn = turn + 1;
         let end = start.elapsed().subsec_nanos();
         if end > max_duration {
             max_duration = end;
         }
+
+        if game.is_over(vec![&user1, &user2]) {
+            break;
+        }
+
+        turn = turn + 1;
     }
 
+    println!("\n\nゲーム終了:");
+    println!("{}手番目\n{}", turn, board);
+    game.print(&"", &user1);
+    game.print(&"", &user2);
     println!("ターン経過最大時間: {}ns", max_duration);
 }

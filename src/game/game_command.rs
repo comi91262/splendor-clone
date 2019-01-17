@@ -260,7 +260,7 @@ fn visit(user: &mut User, board: &mut Board) -> bool {
         order += 1;
     }
 
-let mut result = false;
+    let mut result = false;
     for order in remove_tile_order.into_iter().rev() {
         board.get_noble_tile().remove(order as usize);
         result = true;
