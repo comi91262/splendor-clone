@@ -57,6 +57,10 @@ impl NobleTile {
             stack.push(tile);
         }
 
+        use rand::seq::SliceRandom;
+        let mut rng = rand::thread_rng();
+        stack.shuffle(&mut rng);
+
         for _ in 0..10 - MAX_NUMBER_OF_TILES {
             stack.pop();
         }
