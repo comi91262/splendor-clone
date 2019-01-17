@@ -193,7 +193,13 @@ impl Game {
 
     pub fn is_over(&self, user: &User) {
         if user.get_vp() >= VP_TO_END {
-            self.print(&format!("ゲーム終了しました. プレイヤー{}が勝利しました", user.get_id()), &user);
+            self.print(
+                &format!(
+                    "ゲーム終了しました. プレイヤー{}が勝利しました",
+                    user.get_id()
+                ),
+                &user,
+            );
             process::exit(1);
         }
     }
@@ -391,11 +397,17 @@ impl Game {
                     let output = self.buy_development_card(x, y, &mut user, &mut board);
                     match output {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
-                            Some(card) => action_rewards.push(ActionReward::new(
-                                command,
-                                card.get_point() as f32
-                                    + self.color_value.get(&card.get_color()).unwrap(),
-                            )),
+                            Some(card) => {
+                                // 購入後、貴族の訪問判定を行う
+                                // let before = user.get_vp();
+                                // self.visit(user, board);
+                                // let after = user.get_vp();
+                                action_rewards.push(ActionReward::new(
+                                    command,
+                                    card.get_point() as f32
+                                        + self.color_value.get(&card.get_color()).unwrap(),
+                                ))
+                            }
                             None => (),
                         },
                         Err(_) => (),
