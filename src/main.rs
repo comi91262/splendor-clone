@@ -32,21 +32,25 @@ fn main() {
         let command = game.look(1, &user1, &board);
         let result = game.eval(command, &mut user1, &mut board);
         game.visit(&mut user1, &mut board);
-        game.is_over(&user1);
+        if game.is_over(&user1) {
+            let end = start.elapsed();
+            println!("ターン経過時間: {}ns", end.subsec_nanos());
+            break;
+        }
         game.print(&result, &user1);
 
         let command = game.read();
         let result = game.eval(command, &mut user2, &mut board);
         game.visit(&mut user2, &mut board);
-        game.is_over(&user2);
+        if game.is_over(&user2) {
+            let end = start.elapsed();
+            println!("ターン経過時間: {}ns", end.subsec_nanos());
+            break;
+        }
         game.print(&result, &user2);
 
         turn = turn + 1;
         let end = start.elapsed();
-        println!(
-            "ターン経過時間: {}.{:03}秒",
-            end.as_secs(),
-            end.subsec_nanos() / 1_000_000
-        );
+        println!("ターン経過時間: {}ns", end.subsec_nanos());
     }
 }

@@ -1,15 +1,16 @@
 use crate::board::Board;
 use crate::color::Color;
+use crate::game::game_command::GameCommand;
 use crate::jewelries::JEWELRIES;
 use crate::jewelry_box::JewelryBox;
-use crate::level::Level;
 use crate::user::User;
 
 use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::collections::HashMap;
 use std::fmt;
-use std::process;
+
+mod game_command;
 
 const VP_TO_END: u8 = 15;
 
@@ -18,33 +19,6 @@ pub struct Game {
     color_value: HashMap<Color, f32>,
 }
 
-#[derive(Clone)]
-pub enum GameCommand {
-    ReserveDevelopmentCard { x: u8, y: u8 },
-    BuyDevelopmentCard { x: u8, y: u8 },
-    SelectTwoSameTokens(Color),
-    SelectThreeTokens(Color, Color, Color),
-    ReserveStackCard(Level),
-    BuyReservedCard(u8),
-}
-
-impl fmt::Display for GameCommand {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use self::GameCommand::*;
-        match self {
-            ReserveDevelopmentCard { x, y } => write!(f, "カードを確保する({}, {})", x, y),
-            BuyDevelopmentCard { x, y } => write!(f, "カードを購入する({}, {})", x, y),
-            SelectTwoSameTokens(c) => write!(f, "同じ色のトークンを取得: {}", c),
-            SelectThreeTokens(c1, c2, c3) => {
-                write!(f, "違う色のトークンを取得: {} {} {}", c1, c2, c3)
-            }
-            ReserveStackCard(l) => write!(f, "スタックからカードを確保 {:?} ", l),
-            BuyReservedCard(index) => {
-                write!(f, "手札のカードを購入する: {}枚目", index)
-            }
-        }
-    }
-}
 pub struct ActionReward {
     pub action: GameCommand,
     pub reward: f32,
@@ -65,12 +39,6 @@ impl fmt::Debug for ActionReward {
     }
 }
 
-// trait Repl {
-//     fn read(&mut self) -> u8;
-//     fn eval(&mut self, input: u8, user: &mut User, board: &mut Board) -> String;
-//     fn print(output: &str, result: &user);
-// }
-
 impl Game {
     pub fn new() -> Game {
         let mut color_value = HashMap::new();
@@ -88,7 +56,7 @@ impl Game {
     }
     pub fn read(&mut self) -> GameCommand {
         let random_value = self.rng.gen::<u8>() % 45;
-        self.to_command(random_value)
+        game_command::to_command(random_value)
     }
 
     pub fn eval(&mut self, input: GameCommand, user: &mut User, board: &mut Board) -> String {
@@ -106,83 +74,24 @@ impl Game {
         }
     }
 
-    fn to_command(&self, input: u8) -> GameCommand {
-        use self::GameCommand::*;
-        use crate::color::Color::*;
-        use crate::level::Level::*;
-
-        struct Point {
-            x: u8,
-            y: u8,
-        };
-        let coordinate: [Point; 12] = [
-            Point { x: 0, y: 0 },
-            Point { x: 0, y: 1 },
-            Point { x: 0, y: 2 },
-            Point { x: 0, y: 3 },
-            Point { x: 1, y: 0 },
-            Point { x: 1, y: 1 },
-            Point { x: 1, y: 2 },
-            Point { x: 1, y: 3 },
-            Point { x: 2, y: 0 },
-            Point { x: 2, y: 1 },
-            Point { x: 2, y: 2 },
-            Point { x: 2, y: 3 },
-        ];
-
-        let color_set = [
-            (Black, White, Red),
-            (Black, White, Blue),
-            (Black, White, Green),
-            (Black, Red, Blue),
-            (Black, Red, Green),
-            (Black, Blue, Green),
-            (White, Red, Blue),
-            (White, Red, Green),
-            (White, Blue, Green),
-            (Red, Blue, Green),
-        ];
-
-        let level: [Level; 3] = [One, Two, Three];
-
-        match input as usize {
-            p @ 0...11 => ReserveDevelopmentCard {
-                x: coordinate[p].x,
-                y: coordinate[p].y,
-            },
-            p @ 12...23 => BuyDevelopmentCard {
-                x: coordinate[p - 12].x,
-                y: coordinate[p - 12].y,
-            },
-            c @ 24...28 => SelectTwoSameTokens(JEWELRIES[c - 24]),
-            c @ 29...38 => SelectThreeTokens(
-                color_set[c - 29].0,
-                color_set[c - 29].1,
-                color_set[c - 29].2,
-            ),
-            l @ 39...41 => ReserveStackCard(level[l - 39]),
-            i @ 42...44 => BuyReservedCard((i - 42) as u8),
-            _ => unreachable!(),
-        }
-    }
-
     fn eval_by_selection(
         &self,
         input: GameCommand,
         user: &mut User,
         board: &mut Board,
     ) -> Result<&'static str, &'static str> {
-        use self::GameCommand::*;
+        use self::game_command::GameCommand::*;
+        use self::game_command::*;
 
         match input {
-            ReserveDevelopmentCard { x, y } => self.reserve_development_card(x, y, user, board),
-            BuyDevelopmentCard { x, y } => self.buy_development_card(x, y, user, board),
-            SelectTwoSameTokens(color) => self.select_two_same_tokens(color, user, board),
+            ReserveDevelopmentCard { x, y } => reserve_development_card(x, y, user, board),
+            BuyDevelopmentCard { x, y } => buy_development_card(x, y, user, board),
+            SelectTwoSameTokens(color) => select_two_same_tokens(color, user, board),
             SelectThreeTokens(color1, color2, color3) => {
-                self.select_three_tokens(color1, color2, color3, user, board)
+                select_three_tokens(color1, color2, color3, user, board)
             }
-            ReserveStackCard(level) => self.reserve_stack_card(level, user, board),
-            BuyReservedCard(index) => self.buy_reserved_card(index, user, board),
+            ReserveStackCard(level) => reserve_stack_card(level, user, board),
+            BuyReservedCard(index) => buy_reserved_card(index, user, board),
         }
     }
 
@@ -191,7 +100,7 @@ impl Game {
         println!("ユーザーステータス: {}", user);
     }
 
-    pub fn is_over(&self, user: &User) {
+    pub fn is_over(&self, user: &User) -> bool {
         if user.get_vp() >= VP_TO_END {
             self.print(
                 &format!(
@@ -200,156 +109,9 @@ impl Game {
                 ),
                 &user,
             );
-            process::exit(1);
-        }
-    }
-
-    fn reserve_development_card(
-        &self,
-        x: u8,
-        y: u8,
-        user: &mut User,
-        board: &mut Board,
-    ) -> Result<&'static str, &'static str> {
-        if user.is_over_capacity_of_hand() {
-            Err("試行: カードの確保, 結果: 手札がいっぱいです")
+            true
         } else {
-            match board.get_card(x, y) {
-                Some(card) => {
-                    user.add_to_hands(card);
-                    // 金トークンの取得
-                    match board.get_token(Color::Gold) {
-                    Some(token) => {
-                        user.add_token(token);
-                        Ok("試行: カードの確保, 結果: カードを確保しました")
-                    }
-                    None => Ok("試行: カードの確保, 結果: カードを確保しましたが、金トークンは取得できませんでした"),
-                }
-                }
-                None => Err("試行: カードの確保, 結果: その場所にはもうカードがありません"),
-            }
-        }
-    }
-
-    fn buy_development_card(
-        &self,
-        x: u8,
-        y: u8,
-        user: &mut User,
-        board: &mut Board,
-    ) -> Result<&'static str, &'static str> {
-        let is_available;
-        match board.peek_card(x, y) {
-            Some(card) => {
-                is_available = card.is_available(&user);
-            }
-            None => {
-                return Err(
-                    "試行: カードの購入, 結果: そこにはカードがありません",
-                )
-            }
-        }
-
-        if is_available {
-            let card = board.uget_card(x, y);
-            user.pay(&card, board.get_token_stack());
-            user.obtain(card);
-            Ok("試行: カードの購入, 結果: カードを購入しました")
-        } else {
-            Err("試行: カードの購入, 結果: 必要な宝石数が足りません")
-        }
-    }
-
-    fn select_two_same_tokens(
-        &self,
-        color: Color,
-        user: &mut User,
-        board: &mut Board,
-    ) -> Result<&'static str, &'static str> {
-        if board.can_get_token(color) {
-            for _ in 0..2 {
-                let token = board.uget_token(color);
-                user.add_token(token);
-            }
-            Ok("試行: トークンを取得, 結果: トークンを取得しました")
-        } else {
-            Err("試行: トークンを取得, 結果: 残りのトークン数が4より少ないです")
-        }
-    }
-
-    fn select_three_tokens(
-        &self,
-        color1: Color,
-        color2: Color,
-        color3: Color,
-        user: &mut User,
-        board: &mut Board,
-    ) -> Result<&'static str, &'static str> {
-        let mut count = 0;
-        if let Some(token) = board.get_token(color1) {
-            user.add_token(token);
-            count = count + 1;
-        }
-        if let Some(token) = board.get_token(color2) {
-            user.add_token(token);
-            count = count + 1;
-        }
-        if let Some(token) = board.get_token(color3) {
-            user.add_token(token);
-            count = count + 1;
-        }
-
-        if count == 0 {
-            Err("試行: トークンを取得, 結果: 取得できるトークンがありません")
-        } else {
-            Ok("試行: トークンを取得, 結果: トークンを取得しました")
-        }
-    }
-
-    fn reserve_stack_card(
-        &self,
-        level: Level,
-        user: &mut User,
-        board: &mut Board,
-    ) -> Result<&'static str, &'static str> {
-        if user.is_over_capacity_of_hand() {
-            Err("試行: スタックされたカード取得, 結果: 手札がいっぱいです")
-        } else {
-            match board.get_stack_card(level) {
-                Some(card) => {
-                    user.add_to_hands(card);
-                    match board.get_token(Color::Gold) {
-                    Some(token) => {
-                        user.add_token(token);
-                        Ok("試行: スタックされたカード取得, 結果: カードを確保しました")
-                    }
-                    None => Ok("試行: スタックされたカード取得, 結果: カードを確保しましたが、金トークンは取得できませんでした"),
-                }
-                }
-                None => Err("試行: スタックされたカード取得, 結果: 指定のスタックにカードはありませんでした"),
-            }
-        }
-    }
-
-    pub fn buy_reserved_card(
-        &self,
-        order: u8,
-        user: &mut User,
-        board: &mut Board,
-    ) -> Result<&'static str, &'static str> {
-        let is_available;
-        match user.peek_card_in_hands(order) {
-            Some(card) => is_available = card.is_available(&user),
-            None => return Err("試行: 確保したカードの購入, 結果: そこにはカードがありません"),
-        }
-        if is_available {
-            let card = user.uget_card_in_hands(order);
-            user.pay(&card, board.get_token_stack());
-            user.obtain(card);
-            user.remove_card_in_hands(order);
-            Ok("試行: 確保したカードの購入, 結果: カードを購入しました")
-        } else {
-            Err("試行: 確保したカードの購入, 結果: 必要な宝石数が足りません")
+            false
         }
     }
 
@@ -373,18 +135,18 @@ impl Game {
     }
 
     pub fn look(&mut self, step: u8, user: &User, board: &Board) -> GameCommand {
-        use self::GameCommand::*;
-
+        use self::game_command::GameCommand::*;
+        use self::game_command::*;
         let mut action_rewards: Vec<ActionReward> = vec![];
         self.calc_color_value(user, board);
 
         for input in 0..45 {
-            let command = self.to_command(input);
+            let command = to_command(input);
             let mut user = user.clone();
             let mut board = board.clone();
             match command {
                 ReserveDevelopmentCard { x, y } => {
-                    let output = self.reserve_development_card(x, y, &mut user, &mut board);
+                    let output = reserve_development_card(x, y, &mut user, &mut board);
                     match output {
                         Ok(_) => action_rewards.push(ActionReward::new(
                             command,
@@ -394,7 +156,7 @@ impl Game {
                     };
                 }
                 BuyDevelopmentCard { x, y } => {
-                    let output = self.buy_development_card(x, y, &mut user, &mut board);
+                    let output = buy_development_card(x, y, &mut user, &mut board);
                     let mut can_purchase = false;
                     let mut point = 0.0;
                     let mut color = Color::Gold;
@@ -422,7 +184,7 @@ impl Game {
                     }
                 }
                 SelectTwoSameTokens(c) => {
-                    let result = self.select_two_same_tokens(c, &mut user, &mut board);
+                    let result = select_two_same_tokens(c, &mut user, &mut board);
                     match result {
                         Ok(_) => action_rewards.push(ActionReward::new(
                             command,
@@ -436,7 +198,7 @@ impl Game {
                     let t2 = user.get_number_of_tokens(c2);
                     let t3 = user.get_number_of_tokens(c3);
 
-                    let result = self.select_three_tokens(c1, c2, c3, &mut user, &mut board);
+                    let result = select_three_tokens(c1, c2, c3, &mut user, &mut board);
 
                     let t1 = user.get_number_of_tokens(c1) - t1;
                     let t2 = user.get_number_of_tokens(c2) - t2;
@@ -460,14 +222,14 @@ impl Game {
                     };
                 }
                 ReserveStackCard(l) => {
-                    let result = self.reserve_stack_card(l, &mut user, &mut board);
+                    let result = reserve_stack_card(l, &mut user, &mut board);
                     match result {
                         Ok(_) => action_rewards.push(ActionReward::new(command, 0.0)),
                         Err(_) => (),
                     };
                 }
                 BuyReservedCard(index) => {
-                    let result = self.buy_reserved_card(index, &mut user, &mut board);
+                    let result = buy_reserved_card(index, &mut user, &mut board);
                     let mut can_purchase = false;
                     let mut point = 0.0;
                     let mut color = Color::Gold;
