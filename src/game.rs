@@ -395,23 +395,31 @@ impl Game {
                 }
                 BuyDevelopmentCard { x, y } => {
                     let output = self.buy_development_card(x, y, &mut user, &mut board);
+                    let mut can_purchase = false;
+                    let mut point = 0.0;
+                    let mut color = Color::Gold;
                     match output {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
                             Some(card) => {
-                                // 購入後、貴族の訪問判定を行う
-                                // let before = user.get_vp();
-                                // self.visit(user, board);
-                                // let after = user.get_vp();
-                                action_rewards.push(ActionReward::new(
-                                    command,
-                                    card.get_point() as f32
-                                        + self.color_value.get(&card.get_color()).unwrap(),
-                                ))
+                                point = card.get_point() as f32;
+                                color = card.get_color();
+                                can_purchase = true;
                             }
                             None => (),
                         },
                         Err(_) => (),
                     };
+
+                    if can_purchase {
+                        // 購入後、貴族の訪問判定を行う
+                        let before = user.get_vp() as f32;
+                        self.visit(&mut user, &mut board);
+                        let after = user.get_vp() as f32;
+                        action_rewards.push(ActionReward::new(
+                            command,
+                            point + self.color_value.get(&color).unwrap() + after - before,
+                        ));
+                    }
                 }
                 SelectTwoSameTokens(c) => {
                     let result = self.select_two_same_tokens(c, &mut user, &mut board);
@@ -460,17 +468,31 @@ impl Game {
                 }
                 BuyReservedCard(index) => {
                     let result = self.buy_reserved_card(index, &mut user, &mut board);
+                    let mut can_purchase = false;
+                    let mut point = 0.0;
+                    let mut color = Color::Gold;
                     match result {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
-                            Some(card) => action_rewards.push(ActionReward::new(
-                                command,
-                                card.get_point() as f32
-                                    + self.color_value.get(&card.get_color()).unwrap(),
-                            )),
+                            Some(card) => {
+                                point = card.get_point() as f32;
+                                color = card.get_color();
+                                can_purchase = true;
+                            }
                             None => (),
                         },
                         Err(_) => (),
                     };
+
+                    if can_purchase {
+                        // 購入後、貴族の訪問判定を行う
+                        let before = user.get_vp() as f32;
+                        self.visit(&mut user, &mut board);
+                        let after = user.get_vp() as f32;
+                        action_rewards.push(ActionReward::new(
+                            command,
+                            point + self.color_value.get(&color).unwrap() + after - before,
+                        ));
+                    }
                 }
             }
         }
