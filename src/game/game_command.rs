@@ -142,7 +142,12 @@ pub fn buy_development_card(
         let card = board.uget_card(x, y);
         user.pay(&card, board.get_token_stack());
         user.obtain(card);
-        Ok("試行: カードの購入, 結果: カードを購入しました")
+        let is_visited = visit(user, board);
+        if is_visited {
+            Ok("試行: 確保したカードの購入, 結果: カードを購入しました また、貴族の訪問がありました。")
+        } else {
+            Ok("試行: 確保したカードの購入, 結果: カードを購入しました")
+        }
     } else {
         Err("試行: カードの購入, 結果: 必要な宝石数が足りません")
     }
@@ -231,8 +236,34 @@ pub fn buy_reserved_card(
         user.pay(&card, board.get_token_stack());
         user.obtain(card);
         user.remove_card_in_hands(order);
-        Ok("試行: 確保したカードの購入, 結果: カードを購入しました")
+        let is_visited = visit(user, board);
+        if is_visited {
+            Ok("試行: 確保したカードの購入, 結果: カードを購入しました また、貴族の訪問がありました。")
+        } else {
+            Ok("試行: 確保したカードの購入, 結果: カードを購入しました")
+        }
     } else {
         Err("試行: 確保したカードの購入, 結果: 必要な宝石数が足りません")
     }
+}
+
+fn visit(user: &mut User, board: &mut Board) -> bool {
+    let mut remove_tile_order = vec![];
+    let mut order = 0;
+    let jewelies = user.get_jewelries();
+
+    for tile in board.get_noble_tile().iter_mut() {
+        if tile.can_visit(&jewelies) {
+            user.add_vp(tile.get_point());
+            remove_tile_order.push(order);
+        }
+        order += 1;
+    }
+
+let mut result = false;
+    for order in remove_tile_order.into_iter().rev() {
+        board.get_noble_tile().remove(order as usize);
+        result = true;
+    }
+    result
 }

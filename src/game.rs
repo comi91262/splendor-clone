@@ -115,25 +115,6 @@ impl Game {
         }
     }
 
-    pub fn visit(&self, user: &mut User, board: &mut Board) {
-        let mut remove_tile_order = vec![];
-        let mut order = 0;
-        let jewelies = user.get_jewelries();
-
-        for tile in board.get_noble_tile().iter_mut() {
-            if tile.can_visit(&jewelies) {
-                user.add_vp(tile.get_point());
-                remove_tile_order.push(order);
-            }
-            order += 1;
-        }
-
-        for order in remove_tile_order.into_iter().rev() {
-            println!("貴族の訪問がありました。");
-            board.get_noble_tile().remove(order as usize);
-        }
-    }
-
     pub fn look(&mut self, step: u8, user: &User, board: &Board) -> GameCommand {
         use self::game_command::GameCommand::*;
         use self::game_command::*;
@@ -157,31 +138,16 @@ impl Game {
                 }
                 BuyDevelopmentCard { x, y } => {
                     let output = buy_development_card(x, y, &mut user, &mut board);
-                    let mut can_purchase = false;
-                    let mut point = 0.0;
-                    let mut color = Color::Gold;
                     match output {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
-                            Some(card) => {
-                                point = card.get_point() as f32;
-                                color = card.get_color();
-                                can_purchase = true;
-                            }
+                            Some(card) => action_rewards.push(ActionReward::new(
+                                command,
+                                card.get_point() as f32 + self.color_value.get(&card.get_color()).unwrap(),
+                            )),
                             None => (),
                         },
                         Err(_) => (),
                     };
-
-                    if can_purchase {
-                        // 購入後、貴族の訪問判定を行う
-                        let before = user.get_vp() as f32;
-                        self.visit(&mut user, &mut board);
-                        let after = user.get_vp() as f32;
-                        action_rewards.push(ActionReward::new(
-                            command,
-                            point + self.color_value.get(&color).unwrap() + after - before,
-                        ));
-                    }
                 }
                 SelectTwoSameTokens(c) => {
                     let result = select_two_same_tokens(c, &mut user, &mut board);
@@ -229,32 +195,17 @@ impl Game {
                     };
                 }
                 BuyReservedCard(index) => {
-                    let result = buy_reserved_card(index, &mut user, &mut board);
-                    let mut can_purchase = false;
-                    let mut point = 0.0;
-                    let mut color = Color::Gold;
-                    match result {
+                    let output = buy_reserved_card(index, &mut user, &mut board);
+                    match output {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
-                            Some(card) => {
-                                point = card.get_point() as f32;
-                                color = card.get_color();
-                                can_purchase = true;
-                            }
+                            Some(card) => action_rewards.push(ActionReward::new(
+                                command,
+                                card.get_point() as f32 + self.color_value.get(&card.get_color()).unwrap(),
+                            )),
                             None => (),
                         },
                         Err(_) => (),
                     };
-
-                    if can_purchase {
-                        // 購入後、貴族の訪問判定を行う
-                        let before = user.get_vp() as f32;
-                        self.visit(&mut user, &mut board);
-                        let after = user.get_vp() as f32;
-                        action_rewards.push(ActionReward::new(
-                            command,
-                            point + self.color_value.get(&color).unwrap() + after - before,
-                        ));
-                    }
                 }
             }
         }
@@ -263,7 +214,7 @@ impl Game {
         let mut command = GameCommand::ReserveDevelopmentCard { x: 0, y: 0 };
 
         for e in action_rewards.iter() {
-            println!("{:?}", e);
+            // println!("{:?}", e);
             match e {
                 ActionReward { action, reward } => {
                     if *reward > max_value {

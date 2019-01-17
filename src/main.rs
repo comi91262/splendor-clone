@@ -32,7 +32,6 @@ fn main() {
 
         let command = game.look(1, &user1, &board);
         let result = game.eval(command, &mut user1, &mut board);
-        game.visit(&mut user1, &mut board);
         if game.is_over(&user1) {
             let end = start.elapsed().subsec_nanos();
             if end > max_duration {
@@ -44,7 +43,6 @@ fn main() {
 
         let command = game.read();
         let result = game.eval(command, &mut user2, &mut board);
-        game.visit(&mut user2, &mut board);
         if game.is_over(&user2) {
             let end = start.elapsed().subsec_nanos();
             if end > max_duration {
