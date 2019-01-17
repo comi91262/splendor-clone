@@ -24,6 +24,7 @@ fn main() {
     let mut user1 = User::new(1);
     let mut user2 = User::new(2);
     let mut turn = 1;
+    let mut max_duration = 0;
 
     loop {
         let start = Instant::now();
@@ -33,8 +34,10 @@ fn main() {
         let result = game.eval(command, &mut user1, &mut board);
         game.visit(&mut user1, &mut board);
         if game.is_over(&user1) {
-            let end = start.elapsed();
-            println!("ターン経過時間: {}ns", end.subsec_nanos());
+            let end = start.elapsed().subsec_nanos();
+            if end > max_duration {
+                max_duration = end;
+            }
             break;
         }
         game.print(&result, &user1);
@@ -43,14 +46,20 @@ fn main() {
         let result = game.eval(command, &mut user2, &mut board);
         game.visit(&mut user2, &mut board);
         if game.is_over(&user2) {
-            let end = start.elapsed();
-            println!("ターン経過時間: {}ns", end.subsec_nanos());
+            let end = start.elapsed().subsec_nanos();
+            if end > max_duration {
+                max_duration = end;
+            }
             break;
         }
         game.print(&result, &user2);
 
         turn = turn + 1;
-        let end = start.elapsed();
-        println!("ターン経過時間: {}ns", end.subsec_nanos());
+        let end = start.elapsed().subsec_nanos();
+        if end > max_duration {
+            max_duration = end;
+        }
     }
+
+    println!("ターン経過最大時間: {}ns", max_duration);
 }
