@@ -1,6 +1,7 @@
 use crate::card::Card;
 use crate::color::Color;
 use crate::jewelry_box::JewelryBox;
+use crate::jewelries::JEWELRIES;
 use crate::token::Token;
 
 use std::collections::HashMap;
@@ -91,7 +92,7 @@ impl User {
             Color::Green,
         ];
 
-        for color in colors.iter() {
+        for color in  colors.iter() {
             let cost = card.get_cost(*color);
             let number_of_token = self.get_number_of_tokens(*color);
             let jewelry = jewelries.get_jewelry(*color);
@@ -173,6 +174,47 @@ mod tests {
         assert_eq!(user.hand.len(), 0);
         assert_eq!(user.acquired_card.len(), 0);
         assert_eq!(user.token_stack.get(&Color::Gold).unwrap().len(), 0);
+    }
+    
+    #[test]
+    fn test_get_jewelries() {
+        let user = User::new(1);
+
+    }
+
+    pub fn get_jewelries(&self) -> JewelryBox {
+        let mut jewelries = JewelryBox::new();
+
+        for card in self.get_acquired_cards().iter() {
+            jewelries.add_jewelry(card.get_color(), card.get_point());
+        }
+
+        jewelries
+    }
+
+    #[test]
+    fn test_pay() {
+        let user = User::new(1);
+        user.pay();
+
+        
+    }
+    pub fn pay(&mut self, card: &Card, token_stack: &mut HashMap<Color, Vec<Token>>) {
+        let jewelries = self.get_jewelries();
+        let colors = [
+            Color::Black,
+            Color::White,
+            Color::Red,
+            Color::Blue,
+            Color::Green,
+        ];
+
+        for color in  colors.iter() {
+            let cost = card.get_cost(*color);
+            let number_of_token = self.get_number_of_tokens(*color);
+            let jewelry = jewelries.get_jewelry(*color);
+            self.pay_every_token(cost, number_of_token, jewelry, *color, token_stack);
+        }
     }
 
 }
