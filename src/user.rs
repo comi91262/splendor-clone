@@ -164,6 +164,7 @@ impl User {
 #[cfg(test)]
 mod tests {
     use super::User;
+    use crate::card::Card;
     use crate::color::Color;
 
     #[test]
@@ -178,45 +179,42 @@ mod tests {
     
     #[test]
     fn test_get_jewelries() {
-        let user = User::new(1);
-
-    }
-
-    pub fn get_jewelries(&self) -> JewelryBox {
-        let mut jewelries = JewelryBox::new();
-
-        for card in self.get_acquired_cards().iter() {
-            jewelries.add_jewelry(card.get_color(), card.get_point());
+        let mut user = User::new(1);
+        let cards = Card::load("json/test_card.json");
+        for card in cards.into_iter() {
+            user.acquired_card.push(card);
         }
 
-        jewelries
+        let jewelries = user.get_jewelries();
+        assert_eq!(jewelries.get_jewelry(Color::Black), 1)
+
     }
 
-    #[test]
-    fn test_pay() {
-        let user = User::new(1);
-        user.pay();
+   //  #[test]
+   //  fn test_pay() {
+   //      let user = User::new(1);
+   //      user.pay();
 
-        
-    }
-    pub fn pay(&mut self, card: &Card, token_stack: &mut HashMap<Color, Vec<Token>>) {
-        let jewelries = self.get_jewelries();
-        let colors = [
-            Color::Black,
-            Color::White,
-            Color::Red,
-            Color::Blue,
-            Color::Green,
-        ];
-
-        for color in  colors.iter() {
-            let cost = card.get_cost(*color);
-            let number_of_token = self.get_number_of_tokens(*color);
-            let jewelry = jewelries.get_jewelry(*color);
-            self.pay_every_token(cost, number_of_token, jewelry, *color, token_stack);
-        }
-    }
-
+   //      
+   //  }
+//    pub fn pay(&mut self, card: &Card, token_stack: &mut HashMap<Color, Vec<Token>>) {
+//        let jewelries = self.get_jewelries();
+//        let colors = [
+//            Color::Black,
+//            Color::White,
+//            Color::Red,
+//            Color::Blue,
+//            Color::Green,
+//        ];
+//
+//        for color in  colors.iter() {
+//            let cost = card.get_cost(*color);
+//            let number_of_token = self.get_number_of_tokens(*color);
+//            let jewelry = jewelries.get_jewelry(*color);
+//            self.pay_every_token(cost, number_of_token, jewelry, *color, token_stack);
+//        }
+//    }
+//
 }
 // use std::cell::RefCell;
 // pub struct UserMock {

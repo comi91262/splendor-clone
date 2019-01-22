@@ -3,6 +3,8 @@ use crate::jewelries::JEWELRIES;
 use crate::user::User;
 
 use std::fmt;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Card {
@@ -66,6 +68,15 @@ impl Default for Card {
 }
 
 impl Card {
+    pub fn load(file_name :&str) -> Vec<Card> {
+        let mut cards: Vec<Card> = vec![];
+        for result in BufReader::new(File::open(file_name).unwrap()).lines() {
+            let l = result.unwrap();
+            cards.push(serde_json::from_str(&l).unwrap());
+        }
+
+        cards
+    }
     pub fn get_point(&self) -> u8 {
         self.point
     }

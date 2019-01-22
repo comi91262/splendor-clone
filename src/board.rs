@@ -8,8 +8,6 @@ use ndarray::Array2;
 use std::fmt;
 
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 
 const LIMIT_OF_GETTING_SAME_TOKEN: u8 = 4;
 
@@ -92,14 +90,12 @@ impl Board {
             noble_tile: vec![],
         };
 
+        let cards = Card::load("json/card.json");
+
         let mut level1_stack = vec![];
         let mut level2_stack = vec![];
         let mut level3_stack = vec![];
-
-        for result in BufReader::new(File::open("card.json").unwrap()).lines() {
-            let l = result.unwrap();
-            let card: Card = serde_json::from_str(&l).unwrap();
-
+        for card in cards.into_iter() {
             match card {
                 Card { level: 1, .. } => level1_stack.push(card),
                 Card { level: 2, .. } => level2_stack.push(card),
