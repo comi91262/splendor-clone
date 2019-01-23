@@ -9,7 +9,7 @@ pub mod jewelries;
 pub mod jewelry_box;
 pub mod level;
 pub mod noble_tile;
-pub mod token;
+pub mod token_stack;
 pub mod user;
 
 use crate::board::Board;

@@ -68,7 +68,7 @@ impl Default for Card {
 }
 
 impl Card {
-    pub fn load(file_name :&str) -> Vec<Card> {
+    pub fn load(file_name: &str) -> Vec<Card> {
         let mut cards: Vec<Card> = vec![];
         for result in BufReader::new(File::open(file_name).unwrap()).lines() {
             let l = result.unwrap();
