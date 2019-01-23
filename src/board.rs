@@ -2,7 +2,8 @@ use crate::card::Card;
 use crate::color::Color;
 use crate::level::Level;
 use crate::noble_tile::NobleTile;
-use crate::token::Token;
+use crate::token_stack::Token;
+use crate::token_stack::TokenStack;
 
 use ndarray::Array2;
 use std::fmt;
@@ -30,7 +31,7 @@ const COORDINATE: [(u8, u8); 12] = [
 pub struct Board {
     board: Array2<Card>,
     stack: HashMap<Level, Vec<Card>>,
-    token_stack: HashMap<Color, Vec<Token>>,
+    token_stack: TokenStack,
     noble_tile: Vec<NobleTile>,
 }
 
@@ -71,12 +72,12 @@ impl fmt::Display for Board {
             self.stack.get(&Level::One).unwrap().len(),
             self.stack.get(&Level::Two).unwrap().len(),
             self.stack.get(&Level::Three).unwrap().len(),
-            self.token_stack.get(&Color::Black).unwrap().len(),
-            self.token_stack.get(&Color::White).unwrap().len(),
-            self.token_stack.get(&Color::Red).unwrap().len(),
-            self.token_stack.get(&Color::Blue).unwrap().len(),
-            self.token_stack.get(&Color::Green).unwrap().len(),
-            self.token_stack.get(&Color::Gold).unwrap().len(),
+            self.token_stack.len(Color::Black),
+            self.token_stack.len(Color::White),
+            self.token_stack.len(Color::Red),
+            self.token_stack.len(Color::Blue),
+            self.token_stack.len(Color::Green),
+            self.token_stack.len(Color::Gold)
         )
     }
 }
@@ -86,7 +87,7 @@ impl Board {
         let mut board = Board {
             board: Array2::<Card>::default((3, 4)),
             stack: HashMap::new(),
-            token_stack: HashMap::new(),
+            token_stack: TokenStack::new(),
             noble_tile: vec![],
         };
 
@@ -122,9 +123,7 @@ impl Board {
         use crate::color::Color::*;
         let colors = [Black, White, Red, Blue, Green, Gold];
         for color in colors.iter() {
-            board
-                .token_stack
-                .insert(*color, Token::create_stack(*color));
+            board.token_stack.addn(TokenStack::create_stack(*color));
         }
 
         board.noble_tile = NobleTile::create_stack();
@@ -154,14 +153,12 @@ impl Board {
         card2
     }
     pub fn get_token(&mut self, color: Color) -> Option<Token> {
-        let stack = self.token_stack.get_mut(&color).unwrap();
-        stack.pop()
+        self.token_stack.remove(color)
     }
     pub fn uget_token(&mut self, color: Color) -> Token {
-        let stack = self.token_stack.get_mut(&color).unwrap();
-        stack.pop().unwrap()
+        self.token_stack.remove(color).unwrap()
     }
-    pub fn get_token_stack(&mut self) -> &mut HashMap<Color, Vec<Token>> {
+    pub fn get_token_stack(&mut self) -> &mut TokenStack {
         &mut self.token_stack
     }
     pub fn can_get_token(&self, color: Color) -> bool {
@@ -171,8 +168,7 @@ impl Board {
         &mut self.noble_tile
     }
     fn get_number_of_tokens(&self, color: Color) -> u8 {
-        let stack = self.token_stack.get(&color).unwrap();
-        stack.len() as u8
+        self.token_stack.len(color)
     }
     fn refill(&mut self, x: u8, y: u8) {
         let stack = match x {

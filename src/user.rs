@@ -2,10 +2,8 @@ use crate::card::Card;
 use crate::color::Color;
 use crate::jewelries::JEWELRIES;
 use crate::jewelry_box::JewelryBox;
-use crate::token_stack::Token;
-use crate::token_stack::TokenStack;
+use crate::token_stack::{Token, TokenStack};
 
-use std::collections::HashMap;
 use std::fmt;
 
 const MAX_NUMBER_OF_HANDS: usize = 3;
@@ -28,8 +26,7 @@ ID: {} 勝利点: {}
 手札: {:?}
 取得したカード:
 {:?}
-取得したトークン:
-{:?}
+{}
         ",
             self.id, self.vp, self.hand, self.acquired_card, self.token_stack,
         )
@@ -37,7 +34,7 @@ ID: {} 勝利点: {}
 }
 impl User {
     pub fn new(id: u8) -> User {
-        let mut user = User {
+        let user = User {
             id: id,
             vp: 0,
             hand: vec![],
@@ -73,25 +70,23 @@ impl User {
         self.hand.len() >= MAX_NUMBER_OF_HANDS
     }
     pub fn add_token(&mut self, token: Token) {
-        let stack = self.token_stack.get_mut(&token.get_color()).unwrap();
-        stack.push(token);
+        self.token_stack.add(token);
     }
-    pub fn pay(&mut self, card: &Card, token_stack: &mut HashMap<Color, Vec<Token>>) {
+    pub fn remove_token(&mut self, color: Color) {
+        self.token_stack.remove(color);
+    }
+    pub fn pay(&mut self, card: &Card, board_token_stack: &mut TokenStack) {
         let jewelries = self.get_jewelries();
-        let colors = [
-            Color::Black,
-            Color::White,
-            Color::Red,
-            Color::Blue,
-            Color::Green,
-        ];
+        let mut paid_tokens = vec![];
 
-        for color in colors.iter() {
+        for color in JEWELRIES.iter() {
             let cost = card.get_cost(*color);
             let number_of_token = self.get_number_of_tokens(*color);
             let jewelry = jewelries.get_jewelry(*color);
-            self.pay_every_token(cost, number_of_token, jewelry, *color, token_stack);
+            paid_tokens.append(&mut self.pay_each_tokens(cost, number_of_token, jewelry, *color));
         }
+
+        board_token_stack.addn(paid_tokens);
     }
     pub fn get_acquired_cards(&self) -> &Vec<Card> {
         &self.acquired_card
@@ -115,43 +110,35 @@ impl User {
 
         jewelries
     }
-    fn pay_every_token(
+    fn pay_each_tokens(
         &mut self,
         cost: u8,
         user_tokens: u8,
         user_jewelries: u8,
         color: Color,
-        token_stack: &mut HashMap<Color, Vec<Token>>,
-    ) {
+    ) -> Vec<Token> {
+        let mut paid_tokens = vec![];
         if user_jewelries >= cost {
-            return;
+            return paid_tokens;
         }
-        let new_cost = cost - user_jewelries;
-        if user_tokens > new_cost {
-            self.sub_token(color, new_cost);
-            let stack = token_stack.get_mut(&color).unwrap();
-            for _ in 0..new_cost {
-                stack.push(Token::new(color));
-            }
-        } else {
-            self.sub_token(color, user_tokens);
-            let stack = token_stack.get_mut(&color).unwrap();
-            for _ in 0..user_tokens {
-                stack.push(Token::new(color))
-            }
-            self.sub_token(Color::Gold, new_cost - user_tokens);
-            let stack = token_stack.get_mut(&Color::Gold).unwrap();
-            for _ in 0..new_cost - user_tokens {
-                stack.push(Token::new(Color::Gold));
-            }
-        }
-    }
 
-    fn sub_token(&mut self, color: Color, cost: u8) {
-        let stack = self.token_stack.get_mut(&color).unwrap();
-        for _ in 0..cost {
-            stack.pop();
+        let new_cost = cost - user_jewelries;
+
+        // 宝石トークンを優先的に支払う
+        if user_tokens == 0 {
+            paid_tokens.append(&mut self.token_stack.removen(Color::Gold, new_cost));
+        } else if user_tokens > new_cost {
+            paid_tokens.append(&mut self.token_stack.removen(color, new_cost));
+        } else {
+            paid_tokens.append(&mut self.token_stack.removen(color, user_tokens));
+            paid_tokens.append(
+                &mut self
+                    .token_stack
+                    .removen(Color::Gold, new_cost - user_tokens),
+            );
         }
+
+        paid_tokens
     }
 }
 
@@ -159,9 +146,8 @@ impl User {
 mod tests {
     use super::User;
     use crate::card::Card;
-    use crate::color::Color;
-    use crate::token::Token;
-    use std::collections::HashMap;
+    use crate::color::Color::*;
+    use crate::token_stack::{Token, TokenStack};
 
     #[test]
     fn test_new() {
@@ -170,7 +156,7 @@ mod tests {
         assert_eq!(user.vp, 0);
         assert_eq!(user.hand.len(), 0);
         assert_eq!(user.acquired_card.len(), 0);
-        assert_eq!(user.token_stack.get(&Color::Gold).unwrap().len(), 0);
+        assert_eq!(user.token_stack.len(Gold), 0);
     }
 
     #[test]
@@ -182,90 +168,62 @@ mod tests {
         }
 
         let jewelries = user.get_jewelries();
-        assert_eq!(jewelries.get_jewelry(Color::Black), 1)
+        assert_eq!(jewelries.get_jewelry(Black), 1)
     }
 
-    //    fn test_pay_every_token() {
-    //        let mut user = User::new(1);
-    //        let cards = Card::load("json/test_card.json");
-    //        for card in cards.into_iter() {
-    //            user.acquired_card.push(card);
-    //        }
-    //        let token_stack: HashMap<Color, Vec<Token>> = HashMap::new();
-    //        token_stack.insert(Color::Gold, Token::create_stack(Color::Gold));
-    //        token_stack.insert(Color::Black, Token::create_stack(Color::Black));
-    //
-    //        let a = Token::create_stack(Color::Gold);
-    //        user.add_token(Token::new(Color::Black));
-    //        user.add_token(Token::new(Color::Black));
-    //        user.add_token(Token::new(Color::Black));
-    //
-    //        user.token_stack.insert(Color::Black, Token::create_stack(Color::Black);
-    //        user.pay_every_token(3, 3, 0, Color::Black, )
-    //
-    //    }
-    //
-    //    fn pay_every_token(
-    //        &mut self,
-    //        cost: u8,
-    //        user_tokens: u8,
-    //        user_jewelries: u8,
-    //        color: Color
-    //        token_stack: &mut HashMap<Color, Vec<Token>>,
-    //    ) {
-    //        if jewelries >= cost {
-    //            return;
-    //        }
-    //        let new_cost = cost - jewelries;
-    //        if tokens > new_cost {
-    //            self.sub_token(color, new_cost);
-    //            let stack = token_stack.get_mut(&color).unwrap();
-    //            for _ in 0..new_cost {
-    //                stack.push(Token::new(color));
-    //            }
-    //        } else {
-    //            self.sub_token(color, tokens);
-    //            let stack = token_stack.get_mut(&color).unwrap();
-    //            for _ in 0..tokens {
-    //                stack.push(Token::new(color))
-    //            }
-    //            self.sub_token(Color::Gold, new_cost - tokens);
-    //            let stack = token_stack.get_mut(&Color::Gold).unwrap();
-    //            for _ in 0..new_cost - tokens {
-    //                stack.push(Token::new(Color::Gold));
-    //            }
-    //        }
-    //    }
-    //     #[test]
-    //     fn test_pay() {
-    //        let mut user = User::new(1);
-    //        let cards = Card::load("json/test_card.json");
-    //        for card in cards.into_iter() {
-    //            user.acquired_card.push(card);
-    //        }
-    //        user.token_stack.insert(*color, vec![]);
-    //         user.pay();
-    //        }
-    //    }
+    #[test]
+    fn test_pay_each_token() {
+        let mut user = User::new(1);
 
-    //    pub fn pay(&mut self, card: &Card, token_stack: &mut HashMap<Color, Vec<Token>>) {
-    //        let jewelries = self.get_jewelries();
-    //
-    //        for color in  colors.iter() {
-    //            let cost = card.get_cost(*color);
-    //            let number_of_token = self.get_number_of_tokens(*color);
-    //            let jewelry = jewelries.get_jewelry(*color);
-    //            self.pay_every_token(cost, number_of_token, jewelry, *color, token_stack);
-    //        }
-    //    }
-    //
-    // use std::cell::RefCell;
-    // pub struct UserMock {
-    //     user: RefCell<Vec<User>>
-    // }
-    //
-    // impl UserMock {
-    //     pub fn get_number_of_tokens(&self, color: Color) -> u8 {
-    //        1
-    //     }
+        let tokens = user.pay_each_tokens(0, 0, 0, Black);
+        assert_eq!(tokens, vec![]);
+
+        let tokens = user.pay_each_tokens(2, 0, 2, Black);
+        assert_eq!(tokens, vec![]);
+
+        user.token_stack.addn(vec![Token::new(Black)]);
+        let tokens = user.pay_each_tokens(2, 1, 1, Black);
+        assert_eq!(tokens, vec![Token::new(Black)]);
+
+        user.token_stack.addn(vec![Token::new(Gold)]);
+        let tokens = user.pay_each_tokens(2, 0, 1, White);
+        assert_eq!(tokens, vec![Token::new(Gold)]);
+
+        user.token_stack.addn(vec![Token::new(Gold), Token::new(White)]);
+        let tokens = user.pay_each_tokens(3, 1, 1, White);
+        assert_eq!(tokens, vec![Token::new(White), Token::new(Gold)]);
+    }
 }
+
+//     #[test]
+//     fn test_pay() {
+//        let mut user = User::new(1);
+//        let cards = Card::load("json/test_card.json");
+//        for card in cards.into_iter() {
+//            user.acquired_card.push(card);
+//        }
+//        user.token_stack.insert(*color, vec![]);
+//         user.pay();
+//        }
+//    }
+
+//    pub fn pay(&mut self, card: &Card, token_stack: &mut HashMap<Color, Vec<Token>>) {
+//        let jewelries = self.get_jewelries();
+//
+//        for color in  colors.iter() {
+//            let cost = card.get_cost(*color);
+//            let number_of_token = self.get_number_of_tokens(*color);
+//            let jewelry = jewelries.get_jewelry(*color);
+//            self.pay_every_token(cost, number_of_token, jewelry, *color, token_stack);
+//        }
+//    }
+//
+// use std::cell::RefCell;
+// pub struct UserMock {
+//     user: RefCell<Vec<User>>
+// }
+//
+// impl UserMock {
+//     pub fn get_number_of_tokens(&self, color: Color) -> u8 {
+//        1
+//     }
