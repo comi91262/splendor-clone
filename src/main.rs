@@ -2,7 +2,7 @@
 extern crate serde_derive;
 
 pub mod board;
-pub mod card;
+pub mod card_stack;
 pub mod color;
 mod game;
 pub mod jewelries;

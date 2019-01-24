@@ -1,14 +1,11 @@
-use crate::card::Card;
+use crate::card_stack::{Card, CardStack};
 use crate::color::Color;
 use crate::level::Level;
 use crate::noble_tile::NobleTile;
-use crate::token_stack::Token;
-use crate::token_stack::TokenStack;
+use crate::token_stack::{Token, TokenStack};
 
 use ndarray::Array2;
 use std::fmt;
-
-use std::collections::HashMap;
 
 const LIMIT_OF_GETTING_SAME_TOKEN: u8 = 4;
 
@@ -30,7 +27,7 @@ const COORDINATE: [(u8, u8); 12] = [
 #[derive(Clone)]
 pub struct Board {
     board: Array2<Card>,
-    stack: HashMap<Level, Vec<Card>>,
+    card_stack: CardStack,
     token_stack: TokenStack,
     noble_tile: Vec<NobleTile>,
 }
@@ -69,9 +66,9 @@ impl fmt::Display for Board {
             self.board[(2, 1)],
             self.board[(2, 2)],
             self.board[(2, 3)],
-            self.stack.get(&Level::One).unwrap().len(),
-            self.stack.get(&Level::Two).unwrap().len(),
-            self.stack.get(&Level::Three).unwrap().len(),
+            self.card_stack.len(Level::One),
+            self.card_stack.len(Level::Two),
+            self.card_stack.len(Level::Three),
             self.token_stack.len(Color::Black),
             self.token_stack.len(Color::White),
             self.token_stack.len(Color::Red),
@@ -86,47 +83,14 @@ impl Board {
     pub fn new() -> Board {
         let mut board = Board {
             board: Array2::<Card>::default((3, 4)),
-            stack: HashMap::new(),
-            token_stack: TokenStack::new(),
-            noble_tile: vec![],
+            card_stack: CardStack::new(),
+            token_stack: TokenStack::new().fill(),
+            noble_tile: NobleTile::create_stack(),
         };
-
-        let cards = Card::load("json/card.json");
-
-        let mut level1_stack = vec![];
-        let mut level2_stack = vec![];
-        let mut level3_stack = vec![];
-        for card in cards.into_iter() {
-            match card {
-                Card { level: 1, .. } => level1_stack.push(card),
-                Card { level: 2, .. } => level2_stack.push(card),
-                Card { level: 3, .. } => level3_stack.push(card),
-                Card { level: _, .. } => unreachable!(),
-            }
-        }
-
-        // シャッフルする
-        use rand::seq::SliceRandom;
-        let mut rng = rand::thread_rng();
-        level1_stack.shuffle(&mut rng);
-        level2_stack.shuffle(&mut rng);
-        level3_stack.shuffle(&mut rng);
-
-        board.stack.insert(Level::One, level1_stack);
-        board.stack.insert(Level::Two, level2_stack);
-        board.stack.insert(Level::Three, level3_stack);
 
         for (x, y) in COORDINATE.iter() {
             board.refill(*x, *y);
         }
-
-        use crate::color::Color::*;
-        let colors = [Black, White, Red, Blue, Green, Gold];
-        for color in colors.iter() {
-            board.token_stack.addn(TokenStack::create_stack(*color));
-        }
-
-        board.noble_tile = NobleTile::create_stack();
 
         board
     }
@@ -144,7 +108,7 @@ impl Board {
         }
     }
     pub fn get_stack_card(&mut self, level: Level) -> Option<Card> {
-        self.stack.get_mut(&level).unwrap().pop()
+        self.card_stack.get(level)
     }
     pub fn uget_card(&mut self, x: u8, y: u8) -> Card {
         let card = self.board.get_mut((x as usize, y as usize)).unwrap();
@@ -171,14 +135,14 @@ impl Board {
         self.token_stack.len(color)
     }
     fn refill(&mut self, x: u8, y: u8) {
-        let stack = match x {
-            0 => self.stack.get_mut(&Level::Three).unwrap(),
-            1 => self.stack.get_mut(&Level::Two).unwrap(),
-            2 => self.stack.get_mut(&Level::One).unwrap(),
+        let card = match x {
+            0 => self.card_stack.get(Level::Three),
+            1 => self.card_stack.get(Level::Two),
+            2 => self.card_stack.get(Level::One),
             _ => unreachable!(),
         };
 
-        match stack.pop() {
+        match card {
             Some(card) => self.board[[x as usize, y as usize]] = card,
             None => (),
         }

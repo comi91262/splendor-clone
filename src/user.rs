@@ -1,4 +1,4 @@
-use crate::card::Card;
+use crate::card_stack::Card;
 use crate::color::Color;
 use crate::jewelries::JEWELRIES;
 use crate::jewelry_box::JewelryBox;
@@ -145,7 +145,7 @@ impl User {
 #[cfg(test)]
 mod tests {
     use super::User;
-    use crate::card::Card;
+    use crate::card_stack::Card;
     use crate::color::Color::*;
     use crate::token_stack::{Token, TokenStack};
 
@@ -189,7 +189,8 @@ mod tests {
         let tokens = user.pay_each_tokens(2, 0, 1, White);
         assert_eq!(tokens, vec![Token::new(Gold)]);
 
-        user.token_stack.addn(vec![Token::new(Gold), Token::new(White)]);
+        user.token_stack
+            .addn(vec![Token::new(Gold), Token::new(White)]);
         let tokens = user.pay_each_tokens(3, 1, 1, White);
         assert_eq!(tokens, vec![Token::new(White), Token::new(Gold)]);
     }

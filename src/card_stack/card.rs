@@ -1,3 +1,4 @@
+use super::Card;
 use crate::color::Color;
 use crate::jewelries::JEWELRIES;
 use crate::user::User;
@@ -5,18 +6,6 @@ use crate::user::User;
 use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-
-#[derive(Serialize, Deserialize, Clone)]
-pub struct Card {
-    pub level: u8,
-    pub color: Color,
-    pub point: u8,
-    pub cost_black: u8,
-    pub cost_white: u8,
-    pub cost_red: u8,
-    pub cost_blue: u8,
-    pub cost_green: u8,
-}
 
 impl fmt::Debug for Card {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
