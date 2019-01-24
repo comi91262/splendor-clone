@@ -52,7 +52,13 @@ impl TokenStack {
     pub fn len(&self, color: Color) -> u8 {
         self.0.get(&color).unwrap().len() as u8
     }
-
+    pub fn len_all(&self) -> u8 {
+        let mut sum = 0;
+        for (_, each_stack) in self.0.iter() {
+            sum += each_stack.len();
+        }
+        sum as u8
+    }
     pub fn add(&mut self, token: Token) {
         self._get(token.get_color()).push(token);
     }

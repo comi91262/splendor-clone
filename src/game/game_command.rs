@@ -158,11 +158,17 @@ pub fn select_two_same_tokens(
     user: &mut User,
     board: &mut Board,
 ) -> Result<&'static str, &'static str> {
+    if !user.can_get_token() {
+        return Err("試行: トークンを取得, 結果: トークンの所持数が10を超えるため取得できませんでした");
+    }
     if board.can_get_token(color) {
-        for _ in 0..2 {
-            let token = board.uget_token(color);
-            user.add_token(token);
+        let token = board.uget_token(color);
+        user.add_token(token);
+        if !user.can_get_token() {
+            return Ok("試行: トークンを取得, 結果: トークンを取得しました");
         }
+        let token = board.uget_token(color);
+        user.add_token(token);
         Ok("試行: トークンを取得, 結果: トークンを取得しました")
     } else {
         Err("試行: トークンを取得, 結果: 残りのトークン数が4より少ないです")
@@ -176,14 +182,27 @@ pub fn select_three_tokens(
     user: &mut User,
     board: &mut Board,
 ) -> Result<&'static str, &'static str> {
+    // TODO !!
+    if !user.can_get_token() {
+        return Err("試行: トークンを取得, 結果: トークンの所持数が10を超えるため取得できませんでした");
+    }
+
     let mut count = 0;
     if let Some(token) = board.get_token(color1) {
         user.add_token(token);
         count = count + 1;
     }
+
+    if !user.can_get_token() {
+        return Ok("試行: トークンを取得, 結果: トークンを取得しました");
+    }
     if let Some(token) = board.get_token(color2) {
         user.add_token(token);
         count = count + 1;
+    }
+
+    if !user.can_get_token() {
+        return Ok("試行: トークンを取得, 結果: トークンを取得しました");
     }
     if let Some(token) = board.get_token(color3) {
         user.add_token(token);

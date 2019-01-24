@@ -69,6 +69,9 @@ impl User {
     pub fn is_over_capacity_of_hand(&self) -> bool {
         self.hand.len() >= MAX_NUMBER_OF_HANDS
     }
+    pub fn can_get_token(&self) -> bool {
+        self.token_stack.len_all() <= 10
+    }
     pub fn add_token(&mut self, token: Token) {
         self.token_stack.add(token);
     }
