@@ -25,6 +25,7 @@ fn main() {
     let mut user2 = User::new(2);
     let mut turn = 1;
     let mut max_duration = 0;
+    let mut sum_duration = 0;
 
     loop {
         let start = Instant::now();
@@ -42,6 +43,7 @@ fn main() {
         if end > max_duration {
             max_duration = end;
         }
+        sum_duration += end;
 
         if game.is_over(vec![&user1, &user2]) {
             break;
@@ -54,5 +56,6 @@ fn main() {
     println!("{}手番目\n{}", turn, board);
     game.print(&"", &user1);
     game.print(&"", &user2);
-    println!("ターン経過最大時間: {}ns", max_duration);
+    println!("ターン経過最大: {}ns", max_duration);
+    println!("ターン経過平均: {}ns", sum_duration / turn);
 }
