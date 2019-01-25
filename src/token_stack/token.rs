@@ -19,7 +19,7 @@ impl Token {
     pub fn new(color: Color) -> Token {
         Token { color: color }
     }
-    pub fn get_color(self) -> Color {
+    pub fn get_color(&self) -> Color {
         self.color
     }
 }

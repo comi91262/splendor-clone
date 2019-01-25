@@ -11,7 +11,7 @@ const MAX_NUMBER_OF_TOKEN: usize = 5;
 #[derive(Clone)]
 pub struct TokenStack(HashMap<Color, Vec<Token>>);
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Token {
     color: Color,
 }
@@ -32,12 +32,13 @@ impl TokenStack {
         TokenStack(stack)
     }
 
-    pub fn fill(&mut self) -> TokenStack {
+    pub fn fill(mut self) -> TokenStack {
         let colors = [Black, White, Red, Blue, Green, Gold];
         for color in colors.iter() {
             self.0.insert(*color, TokenStack::create_stack(*color));
         }
-        self.clone()
+        TokenStack(self.0)
+        //self.clone()
     }
 
     fn create_stack(color: Color) -> Vec<Token> {
@@ -60,6 +61,7 @@ impl TokenStack {
         sum as u8
     }
     pub fn add(&mut self, token: Token) {
+        let color = token.get_color();
         self._get(token.get_color()).push(token);
     }
 
