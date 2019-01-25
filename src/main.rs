@@ -26,18 +26,23 @@ fn main() {
     let mut turn = 1;
     let mut max_duration = 0;
     let mut sum_duration = 0;
+    let mut is_over = false;
 
     loop {
         let start = Instant::now();
         println!("{}手番目\n{}", turn, board);
 
         let command = game.look(1, &user1, &board);
-        let result = game.eval(command, &mut user1, &mut board);
-        game.print(&result, &user1);
+        match game.eval(command, &mut user1, &mut board) {
+            Ok(msg) => game.print(&msg, &user1),
+            Err(error_msg) => is_over = true,
+        }
 
         let command = game.read();
-        let result = game.eval(command, &mut user2, &mut board);
-        game.print(&result, &user2);
+        match game.eval(command, &mut user2, &mut board) {
+            Ok(msg) => game.print(&msg, &user2),
+            Err(error_msg) => is_over = true,
+        }
 
         let end = start.elapsed().subsec_nanos();
         if end > max_duration {
@@ -45,7 +50,7 @@ fn main() {
         }
         sum_duration += end;
 
-        if game.is_over(vec![&user1, &user2]) {
+        if game.is_over(vec![&user1, &user2]) || is_over {
             break;
         }
 

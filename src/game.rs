@@ -13,6 +13,7 @@ use std::fmt;
 mod game_command;
 
 const VP_TO_END: u8 = 15;
+const MAX_NUMBER_OF_TRIALS: u8 = 100;
 
 pub struct Game {
     rng: ThreadRng,
@@ -59,19 +60,27 @@ impl Game {
         game_command::to_command(random_value)
     }
 
-    pub fn eval(&mut self, input: GameCommand, user: &mut User, board: &mut Board) -> String {
-        let output = self.eval_by_selection(input, user, board);
-
-        match output {
-            Ok(result) => {
-                return result.to_string();
-            }
-            Err(error_msg) => {
-                println!("{}", error_msg);
-                let input = self.read();
-                self.eval(input, user, board)
+    pub fn eval(
+        &mut self,
+        input: GameCommand,
+        user: &mut User,
+        board: &mut Board,
+    ) -> Result<String, String> {
+        let mut input = input;
+        for _ in 0..MAX_NUMBER_OF_TRIALS {
+            match self.eval_by_selection(input, user, board) {
+                Ok(result) => {
+                    return Ok(result.to_string());
+                }
+                Err(error_msg) => {
+                    println!("{}", error_msg);
+                    input = self.read();
+                    continue;
+                }
             }
         }
+
+        Err("降参を選ばれました".to_string())
     }
 
     fn eval_by_selection(
