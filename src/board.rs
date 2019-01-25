@@ -39,36 +39,28 @@ impl fmt::Display for Board {
             "
 貴族タイル: {:?}
 ----------------------------------------------------------------------------------------------
-{}| {}| {}| {}
-{}| {}| {}| {}
-{}| {}| {}| {}
+{}| {}| {}| {}  残り枚数: {}
+{}| {}| {}| {}  残り枚数: {}
+{}| {}| {}| {}  残り枚数: {}
 ----------------------------------------------------------------------------------------------
-レベル3 残り残数: {}
-レベル2 残り残数: {}
-レベル1 残り残数: {}
-黒トークン 残り枚数: {}
-白トークン 残り枚数: {}
-赤トークン 残り枚数: {}
-青トークン 残り枚数: {}
-緑トークン 残り枚数: {}
-金トークン 残り枚数: {}
+残りのトークン (黒, 白, 赤, 青, 緑, 金) = ({}, {}, {}, {}, {}, {})
         ",
             self.noble_tile,
             self.board[(0, 0)],
             self.board[(0, 1)],
             self.board[(0, 2)],
             self.board[(0, 3)],
+            self.card_stack.len(Level::Three),
             self.board[(1, 0)],
             self.board[(1, 1)],
             self.board[(1, 2)],
             self.board[(1, 3)],
+            self.card_stack.len(Level::Two),
             self.board[(2, 0)],
             self.board[(2, 1)],
             self.board[(2, 2)],
             self.board[(2, 3)],
             self.card_stack.len(Level::One),
-            self.card_stack.len(Level::Two),
-            self.card_stack.len(Level::Three),
             self.token_stack.len(Color::Black),
             self.token_stack.len(Color::White),
             self.token_stack.len(Color::Red),
