@@ -273,3 +273,26 @@ impl Game {
         *gold_color_value = max_color_value;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Game;
+    use crate::board::Board;
+    use crate::user::User;
+
+    use crate::card_stack::Card;
+    use crate::color::Color::*;
+    use crate::token_stack::{Token, TokenStack};
+
+    #[test]
+    fn test_look() {
+        let mut game = Game::new();
+        let mut board = Board::new();
+        let mut user = User::new(1);
+
+        let command = game.look(1, &mut user, &mut board);
+
+        println!("{}", command);
+
+    }
+}

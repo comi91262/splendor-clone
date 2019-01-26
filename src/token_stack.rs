@@ -108,7 +108,7 @@ mod tests {
             assert_eq!(stack.len(*color), 0);
         }
 
-        stack.fill();
+        let stack = stack.fill();
         for color in colors.iter() {
             assert_eq!(stack.len(*color), 5);
         }
