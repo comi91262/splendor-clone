@@ -1,5 +1,13 @@
-use crate::color::Color;
+use crate::game::color::Color;
+use crate::game::color::Color::*;
 
+pub const JEWELRIES: [Color; 5] = [
+    Color::Black,
+    Color::White,
+    Color::Red,
+    Color::Blue,
+    Color::Green,
+];
 pub struct JewelryBox {
     black: u8,
     white: u8,
@@ -19,7 +27,6 @@ impl JewelryBox {
         }
     }
     pub fn get_jewelry(&self, color: Color) -> u8 {
-        use crate::color::Color::*;
         match color {
             Black => self.black,
             White => self.white,
@@ -30,7 +37,6 @@ impl JewelryBox {
         }
     }
     pub fn set_jewelry(&mut self, color: Color, jewelies: u8) {
-        use crate::color::Color::*;
         match color {
             Black => self.black = jewelies,
             White => self.white = jewelies,
@@ -41,7 +47,6 @@ impl JewelryBox {
         }
     }
     pub fn add_jewelry(&mut self, color: Color, jewelies: u8) {
-        use crate::color::Color::*;
         match color {
             Black => self.black += jewelies,
             White => self.white += jewelies,

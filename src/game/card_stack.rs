@@ -1,6 +1,7 @@
-use crate::color::Color;
-use crate::level::Level;
+use crate::game::color::Color;
+use crate::game::level::Level;
 
+use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
 

@@ -1,5 +1,5 @@
 use super::Token;
-use crate::color::Color;
+use crate::game::color::Color;
 
 use std::fmt;
 

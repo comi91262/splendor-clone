@@ -1,3 +1,4 @@
+use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Serialize, Deserialize, Clone, Eq, PartialEq, Hash, Copy)]

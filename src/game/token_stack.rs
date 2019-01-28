@@ -1,5 +1,5 @@
-use crate::color::Color;
-use crate::color::Color::*;
+use crate::game::color::Color;
+use crate::game::color::Color::*;
 
 use std::collections::HashMap;
 use std::fmt;

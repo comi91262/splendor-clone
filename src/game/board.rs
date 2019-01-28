@@ -1,8 +1,8 @@
-use crate::card_stack::{Card, CardStack};
-use crate::color::Color;
-use crate::level::Level;
-use crate::noble_tile::NobleTile;
-use crate::token_stack::{Token, TokenStack};
+use crate::game::card_stack::{Card, CardStack};
+use crate::game::color::Color;
+use crate::game::level::Level;
+use crate::game::noble_tile::NobleTile;
+use crate::game::token_stack::{Token, TokenStack};
 
 use ndarray::Array2;
 use std::fmt;

@@ -1,8 +1,10 @@
 use super::Card;
-use crate::color::Color;
-use crate::jewelries::JEWELRIES;
-use crate::user::User;
+use crate::game::color::Color;
+use crate::game::color::Color::*;
+use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
+use crate::game::user::User;
 
+use serde_json::from_str;
 use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -89,7 +91,6 @@ impl Card {
     }
 
     pub fn get_cost(&self, color: Color) -> u8 {
-        use crate::color::Color::*;
         match color {
             Black => self.cost_black,
             White => self.cost_white,

@@ -1,8 +1,7 @@
-use crate::card_stack::Card;
-use crate::color::Color;
-use crate::jewelries::JEWELRIES;
-use crate::jewelry_box::JewelryBox;
-use crate::token_stack::{Token, TokenStack};
+use crate::game::card_stack::Card;
+use crate::game::color::Color;
+use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
+use crate::game::token_stack::{Token, TokenStack};
 
 use std::fmt;
 
@@ -69,7 +68,7 @@ impl User {
     pub fn is_over_capacity_of_hand(&self) -> bool {
         self.hand.len() >= MAX_NUMBER_OF_HANDS
     }
-    pub fn can_get_token(&self,) -> bool {
+    pub fn can_get_token(&self) -> bool {
         self.token_stack.len_all() <= 10
     }
     pub fn add_token(&mut self, token: Token) {

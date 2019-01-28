@@ -2,9 +2,10 @@ use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-use crate::color::Color;
-use crate::jewelries::JEWELRIES;
-use crate::jewelry_box::JewelryBox;
+use crate::game::color::Color;
+use crate::game::color::Color::*;
+use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
+use serde_derive::{Deserialize, Serialize};
 
 const MAX_NUMBER_OF_TILES: u8 = 4;
 
@@ -80,7 +81,6 @@ impl NobleTile {
         return true;
     }
     fn get_bonus(&self, color: Color) -> u8 {
-        use crate::color::Color::*;
         match color {
             Black => self.black_bonus,
             White => self.white_bonus,

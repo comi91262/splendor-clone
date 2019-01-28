@@ -1,8 +1,10 @@
-use crate::board::Board;
-use crate::color::Color;
-use crate::jewelries::JEWELRIES;
-use crate::level::Level;
-use crate::user::User;
+use crate::game::board::Board;
+use crate::game::color::Color;
+use crate::game::color::Color::*;
+use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
+use crate::game::level::Level;
+use crate::game::level::Level::*;
+use crate::game::user::User;
 
 use std::fmt;
 
@@ -36,8 +38,6 @@ impl fmt::Display for GameCommand {
 
 pub fn to_command(input: u8) -> GameCommand {
     use self::GameCommand::*;
-    use crate::color::Color::*;
-    use crate::level::Level::*;
 
     struct Point {
         x: u8,
