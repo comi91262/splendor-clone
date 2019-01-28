@@ -23,7 +23,6 @@ fn main() {
     let mut board = Board::new();
     let mut user1 = User::new(1);
     let mut user2 = User::new(2);
-    let mut user3 = User::new(3);
     let mut turn = 1;
     let mut max_duration = 0;
     let mut sum_duration = 0;
@@ -39,17 +38,11 @@ fn main() {
             Err(error_msg) => is_over = true,
         }
 
-        // let command = game.read();
-        // match game.eval(command, &mut user2, &mut board) {
-        //     Ok(msg) => game.print(&msg, &user2),
-        //     Err(error_msg) => is_over = true,
-        // }
-
-        // let command = game.look(1, &user1, &board);
-        // match game.eval(command, &mut user1, &mut board) {
-        //     Ok(msg) => game.print(&msg, &user1),
-        //     Err(error_msg) => is_over = true,
-        // }
+        let command = game.read();
+        match game.eval(command, &mut user2, &mut board) {
+            Ok(msg) => game.print(&msg, &user2),
+            Err(error_msg) => is_over = true,
+        }
 
         let end = start.elapsed().subsec_nanos();
         if end > max_duration {
