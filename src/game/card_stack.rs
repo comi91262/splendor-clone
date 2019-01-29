@@ -3,7 +3,6 @@ use crate::game::level::Level;
 
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fmt;
 
 mod card;
 

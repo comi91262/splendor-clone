@@ -1,35 +1,50 @@
-use std::Ha
+use std::collections::HashMap;
 
-pub mod ActionRewardList {
-    list: Vec<ActoinReward>, // TODO to const
+use crate::game::board::Board;
+use crate::game::color::Color;
+use crate::game::color::Color::*;
+use crate::game::game_command::GameCommand;
+use crate::game::game_command::GameCommand::*;
+use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
+use crate::game::user::User;
+
+pub struct ActionReward {
+    action: GameCommand,
+    reward: f32,
+}
+
+mod action_reward;
+
+pub struct ActionRewardList {
+    entity: Vec<ActionReward>, // TODO to const
     color_value: HashMap<Color, f32>,
 }
 
 impl ActionRewardList {
-    pub fn new() {
+    pub fn new() -> ActionRewardList {
         let mut color_value = HashMap::new();
-        color_value.insert(Color::Black, 0.0);
-        color_value.insert(Color::White, 0.0);
-        color_value.insert(Color::Red, 0.0);
-        color_value.insert(Color::Blue, 0.0);
-        color_value.insert(Color::Green, 0.0);
-        color_value.insert(Color::Gold, 0.0);
+        let colors = [Black, White, Red, Blue, Green, Gold];
+        for color in colors.into_iter() {
+            color_value.insert(color, 0.0);
+        }
 
+        ActionRewardList {
+            entity: vec![],
+            color_value: color_value,
+        }
     }
 
-    pub fn look(&mut self, step: u8, user: &User, board: &Board) -> GameCommand {
-        use self::game_command::GameCommand::*;
-        use self::game_command::*;
+    pub fn look(step: u8, user: &User, board: &Board) -> GameCommand {
         let mut action_rewards: Vec<ActionReward> = vec![];
         self.calc_color_value(user, board);
 
         for input in 0..45 {
-            let command = to_command(input);
+            let command = GameCommand::to_command(input);
             let mut user = user.clone();
             let mut board = board.clone();
             match command {
                 ReserveDevelopmentCard { x, y } => {
-                    let output = reserve_development_card(x, y, &mut user, &mut board);
+                    let output = GameCommand::reserve_development_card(x, y, &mut user, &mut board);
                     match output {
                         Ok(_) => action_rewards.push(ActionReward::new(
                             command,
@@ -39,7 +54,7 @@ impl ActionRewardList {
                     };
                 }
                 BuyDevelopmentCard { x, y } => {
-                    let output = buy_development_card(x, y, &mut user, &mut board);
+                    let output = GameCommand::buy_development_card(x, y, &mut user, &mut board);
                     match output {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
                             Some(card) => action_rewards.push(ActionReward::new(
@@ -53,7 +68,7 @@ impl ActionRewardList {
                     };
                 }
                 SelectTwoSameTokens(c) => {
-                    let result = select_two_same_tokens(c, &mut user, &mut board);
+                    let result = GameCommand::select_two_same_tokens(c, &mut user, &mut board);
                     match result {
                         Ok(_) => action_rewards.push(ActionReward::new(
                             command,
@@ -67,7 +82,8 @@ impl ActionRewardList {
                     let t2 = user.get_number_of_tokens(c2);
                     let t3 = user.get_number_of_tokens(c3);
 
-                    let result = select_three_tokens(c1, c2, c3, &mut user, &mut board);
+                    let result =
+                        GameCommand::select_three_tokens(c1, c2, c3, &mut user, &mut board);
 
                     let t1 = user.get_number_of_tokens(c1) - t1;
                     let t2 = user.get_number_of_tokens(c2) - t2;
@@ -91,14 +107,14 @@ impl ActionRewardList {
                     };
                 }
                 ReserveStackCard(l) => {
-                    let result = reserve_stack_card(l, &mut user, &mut board);
+                    let result = GameCommand::reserve_stack_card(l, &mut user, &mut board);
                     match result {
                         Ok(_) => action_rewards.push(ActionReward::new(command, 0.0)),
                         Err(_) => (),
                     };
                 }
                 BuyReservedCard(index) => {
-                    let output = buy_reserved_card(index, &mut user, &mut board);
+                    let output = GameCommand::buy_reserved_card(index, &mut user, &mut board);
                     match output {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
                             Some(card) => action_rewards.push(ActionReward::new(
@@ -169,18 +185,17 @@ impl ActionRewardList {
         let gold_color_value = self.color_value.get_mut(&Color::Gold).unwrap();
         *gold_color_value = max_color_value;
     }
-
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Game;
-    use crate::board::Board;
-    use crate::user::User;
+    use crate::game::board::Board;
+    use crate::game::user::User;
+    use crate::game::Game;
 
-    use crate::card_stack::Card;
-    use crate::color::Color::*;
-    use crate::token_stack::{Token, TokenStack};
+    use crate::game::card_stack::Card;
+    use crate::game::color::Color::*;
+    use crate::game::token_stack::{Token, TokenStack};
 
     #[test]
     fn test_look() {
@@ -191,6 +206,5 @@ mod tests {
         let command = game.look(1, &mut user, &mut board);
 
         println!("{}", command);
-
     }
 }

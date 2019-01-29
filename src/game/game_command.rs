@@ -1,7 +1,7 @@
 use crate::game::board::Board;
 use crate::game::color::Color;
 use crate::game::color::Color::*;
-use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
+use crate::game::jewelry_box::JEWELRIES;
 use crate::game::level::Level;
 use crate::game::level::Level::*;
 use crate::game::user::User;

@@ -1,8 +1,6 @@
-
-pub struct ActionReward {
-    pub action: GameCommand,
-    pub reward: f32,
-}
+use super::ActionReward;
+use crate::game::game_command::GameCommand;
+use std::fmt;
 
 impl ActionReward {
     fn new(action: GameCommand, reward: f32) -> ActionReward {

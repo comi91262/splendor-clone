@@ -1,10 +1,9 @@
 use super::Card;
 use crate::game::color::Color;
 use crate::game::color::Color::*;
-use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
+use crate::game::jewelry_box::JEWELRIES;
 use crate::game::user::User;
 
-use serde_json::from_str;
 use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader};

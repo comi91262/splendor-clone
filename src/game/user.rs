@@ -1,8 +1,11 @@
 use crate::game::card_stack::Card;
 use crate::game::color::Color;
+use crate::game::game_command::{to_command, GameCommand};
 use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
 use crate::game::token_stack::{Token, TokenStack};
 
+use rand::rngs::ThreadRng;
+use rand::Rng;
 use std::fmt;
 
 const MAX_NUMBER_OF_HANDS: usize = 3;
@@ -14,6 +17,7 @@ pub struct User {
     acquired_card: Vec<Card>,
     vp: u8,
     token_stack: TokenStack,
+    rng: ThreadRng,
 }
 
 impl fmt::Display for User {
@@ -39,9 +43,14 @@ impl User {
             hand: vec![],
             acquired_card: vec![],
             token_stack: TokenStack::new(),
+            rng: rand::thread_rng(),
         };
 
         user
+    }
+    pub fn read(&mut self) -> GameCommand {
+        let random_value = self.rng.gen::<u8>() % 45;
+        to_command(random_value)
     }
     pub fn get_id(&self) -> u8 {
         self.id
@@ -147,9 +156,9 @@ impl User {
 #[cfg(test)]
 mod tests {
     use super::User;
-    use crate::card_stack::Card;
-    use crate::color::Color::*;
-    use crate::token_stack::{Token, TokenStack};
+    use crate::game::card_stack::Card;
+    use crate::game::color::Color::*;
+    use crate::game::token_stack::{Token, TokenStack};
 
     #[test]
     fn test_new() {

@@ -98,11 +98,11 @@ impl TokenStack {
 mod tests {
     use super::Token;
     use super::TokenStack;
-    use crate::color::Color::*;
+    use crate::game::color::Color::*;
 
     #[test]
     fn test_new() {
-        let mut stack = TokenStack::new();
+        let stack = TokenStack::new();
         let colors = [Black, White, Red, Blue, Green, Gold];
         for color in colors.iter() {
             assert_eq!(stack.len(*color), 0);
