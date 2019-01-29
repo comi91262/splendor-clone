@@ -1,11 +1,11 @@
-use self::action_reward_list::ActionRewardList;
+use self::action_reward_table::ActionRewardList;
 use self::board::Board;
 use self::game_command::GameCommand;
 use self::user::User;
 
 use std::time::Instant;
 
-pub mod action_reward_list;
+pub mod action_reward_table;
 pub mod board;
 pub mod card_stack;
 pub mod color;
