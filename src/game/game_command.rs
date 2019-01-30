@@ -1,7 +1,7 @@
 use crate::game::board::Board;
 use crate::game::color::Color;
 use crate::game::color::Color::*;
-use crate::game::jewelry_box::JEWELRIES;
+use crate::game::gem::{Gem, GEMS};
 use crate::game::level::Level;
 use crate::game::level::Level::*;
 use crate::game::user::User;
@@ -83,7 +83,7 @@ impl GameCommand {
                 x: coordinate[p - 12].x,
                 y: coordinate[p - 12].y,
             },
-            c @ 24...28 => SelectTwoSameTokens(JEWELRIES[c - 24]),
+            c @ 24...28 => SelectTwoSameTokens(GEMS[c - 24]),
             c @ 29...38 => SelectThreeTokens(
                 color_set[c - 29].0,
                 color_set[c - 29].1,

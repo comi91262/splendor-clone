@@ -1,7 +1,7 @@
 use super::Card;
 use crate::game::color::Color;
 use crate::game::color::Color::*;
-use crate::game::jewelry_box::JEWELRIES;
+use crate::game::gem::{Gem, GEMS};
 use crate::game::user::User;
 
 use std::fmt;
@@ -75,9 +75,9 @@ impl Card {
 
         let mut gold_token = user.get_number_of_tokens(Color::Gold) as i8;
 
-        for color in JEWELRIES.iter() {
+        for color in GEMS.iter() {
             let token = user.get_number_of_tokens(*color);
-            let jewelry = jewelries.get_jewelry(*color);
+            let jewelry = jewelries.get_gems(*color);
             let cost = self.get_cost(*color);
             self.estimate_gold_token(token + jewelry, cost, &mut gold_token);
         }

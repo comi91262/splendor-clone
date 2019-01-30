@@ -4,7 +4,7 @@ use std::io::{BufRead, BufReader};
 
 use crate::game::color::Color;
 use crate::game::color::Color::*;
-use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
+use crate::game::gem::{Gem, GEMS};
 use serde_derive::{Deserialize, Serialize};
 
 const MAX_NUMBER_OF_TILES: u8 = 4;
@@ -71,9 +71,9 @@ impl NobleTile {
     pub fn get_point(&self) -> u8 {
         self.point
     }
-    pub fn can_visit(&self, jewelries: &JewelryBox) -> bool {
-        for color in JEWELRIES.iter() {
-            if self.get_bonus(*color) > jewelries.get_jewelry(*color) {
+    pub fn can_visit(&self, jewelries: &Gem) -> bool {
+        for color in GEMS.iter() {
+            if self.get_bonus(*color) > jewelries.get_gems(*color) {
                 return false;
             }
         }

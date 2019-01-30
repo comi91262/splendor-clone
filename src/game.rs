@@ -10,7 +10,7 @@ pub mod board;
 pub mod card_stack;
 pub mod color;
 mod game_command;
-pub mod jewelry_box;
+pub mod gem;
 pub mod level;
 pub mod noble_tile;
 pub mod token_stack;

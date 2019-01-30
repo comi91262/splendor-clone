@@ -5,105 +5,82 @@ use crate::game::color::Color;
 use crate::game::color::Color::*;
 use crate::game::game_command::GameCommand;
 use crate::game::game_command::GameCommand::*;
-use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
+use crate::game::gem::{Gem, GEMS};
 use crate::game::user::User;
 
 mod action_reward;
+mod color_value;
 
 pub struct ActionReward {
     action: GameCommand,
     reward: f32,
 }
-
-pub struct ActionRewardTable {
-    entity: Vec<ActionReward>, // TODO to const
-    color_value: HashMap<Color, f32>,
-}
+pub struct ColorValue(HashMap<Color, f32>);
+pub struct ActionRewardTable(Vec<ActionReward>);
 
 impl ActionRewardTable {
     pub fn new() -> ActionRewardTable {
-        let mut color_value = HashMap::new();
-        let colors = [Black, White, Red, Blue, Green, Gold];
-        for color in colors.into_iter() {
-            color_value.insert(&color, 0.0);
-        }
-
-        ActionRewardTable {
-            entity: vec![],
-            color_value: color_value,
-        }
+        ActionRewardTable(vec![])
     }
 
-    pub fn look(&mut self, step: u8, users: &Vec<User>, board: &Board) -> GameCommand {
-        self.calc_color_value(users, board);
-        self.estimate(users, board);
+    pub fn look(&mut self, step: u8, users: &mut Vec<User>, board: &mut Board) -> GameCommand {
+        let mut user = User::new(1);
+        let color_value = self.calc_color_value(&user, board);
+
+        self.estimate(1, &mut user, board, &color_value);
         self.choice()
     }
 
-    fn calc_color_value(&mut self, user: &User, board: &Board) {
-        let mut required_cost = JewelryBox::new();
-        let mut owned = JewelryBox::new();
+    fn calc_color_value(&mut self, user: &User, board: &Board) -> ColorValue {
+        let mut required_cost = Gem::new();
+        let mut owned = Gem::new();
+        let mut color_value = ColorValue::new();
 
         // 基礎点 = 0.3
         // α = 1 - 所持宝石数 / 盤面の必要な宝石数
         for row in 0..3 {
             for col in 0..4 {
                 if let Some(card) = board.peek_card(row, col) {
-                    for color in JEWELRIES.iter() {
-                        required_cost.add_jewelry(*color, card.get_cost(*color));
+                    for color in GEMS.iter() {
+                        required_cost.add_gems(*color, card.get_cost(*color));
                     }
                 }
             }
         }
 
-        for card in user.get_acquired_cards().iter() {
-            for color in JEWELRIES.iter() {
-                owned.add_jewelry(*color, card.get_cost(*color));
-            }
+        owned = user.get_owned_gems();
+
+        for color in GEMS.iter() {
+            color_value.set(
+                *color,
+                0.3 * (1.0 - owned.get_gems(*color) as f32 / required_cost.get_gems(*color) as f32),
+            );
         }
+        color_value.set_gold_value();
 
-        let mut max_color_value = 0.0;
-        for color in JEWELRIES.iter() {
-            let color_value = self.color_value.get_mut(color).unwrap();
-            *color_value = 0.3
-                * (1.0
-                    - owned.get_jewelry(*color) as f32 / required_cost.get_jewelry(*color) as f32);
-
-            if max_color_value <= *color_value {
-                max_color_value = *color_value;
-            }
-        }
-
-        let gold_color_value = self.color_value.get_mut(&Color::Gold).unwrap();
-        *gold_color_value = max_color_value;
+        color_value
     }
 
-    pub fn estimate(&self, step: u8, user: &User, board: &Board) {
-        let mut action_rewards: Vec<ActionReward> = vec![];
-
+    pub fn estimate(&mut self, step: u8, user: &mut User, board: &mut Board, color_value: &ColorValue) {
         for input in 0..45 {
             let command = GameCommand::to_command(input);
-            let mut user = user.clone();
-            let mut board = board.clone();
             match command {
                 ReserveDevelopmentCard { x, y } => {
-                    let output = GameCommand::reserve_development_card(x, y, &mut user, &mut board);
+                    let output = GameCommand::reserve_development_card(x, y, user, board);
                     match output {
-                        Ok(_) => action_rewards.push(ActionReward::new(
-                            command,
-                            *self.color_value.get(&Color::Gold).unwrap(),
-                        )),
+                        Ok(_) => self
+                            .0
+                            .push(ActionReward::new(command, color_value.get(Gold))),
                         Err(_) => (),
                     };
                 }
                 BuyDevelopmentCard { x, y } => {
-                    let output = GameCommand::buy_development_card(x, y, &mut user, &mut board);
+                    let output = GameCommand::buy_development_card(x, y, user, board);
                     match output {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
-                            Some(card) => action_rewards.push(ActionReward::new(
+                            Some(card) => self.0.push(ActionReward::new(
                                 command,
-                                card.get_point() as f32
-                                    + self.color_value.get(&card.get_color()).unwrap(),
+                                card.get_point() as f32 + color_value.get(card.get_color()),
                             )),
                             None => (),
                         },
@@ -111,12 +88,11 @@ impl ActionRewardTable {
                     };
                 }
                 SelectTwoSameTokens(c) => {
-                    let result = GameCommand::select_two_same_tokens(c, &mut user, &mut board);
+                    let result = GameCommand::select_two_same_tokens(c, user, board);
                     match result {
-                        Ok(_) => action_rewards.push(ActionReward::new(
-                            command,
-                            2.0 * *self.color_value.get(&c).unwrap(),
-                        )),
+                        Ok(_) => self
+                            .0
+                            .push(ActionReward::new(command, 2.0 * color_value.get(c))),
                         Err(_) => (),
                     };
                 }
@@ -126,7 +102,7 @@ impl ActionRewardTable {
                     let t3 = user.get_number_of_tokens(c3);
 
                     let result =
-                        GameCommand::select_three_tokens(c1, c2, c3, &mut user, &mut board);
+                        GameCommand::select_three_tokens(c1, c2, c3, user, board);
 
                     let t1 = user.get_number_of_tokens(c1) - t1;
                     let t2 = user.get_number_of_tokens(c2) - t2;
@@ -135,35 +111,34 @@ impl ActionRewardTable {
                     let mut total = 0.0;
 
                     if t1 > 0 {
-                        total += self.color_value.get(&c1).unwrap();
+                        total += color_value.get(c1);
                     }
                     if t2 > 0 {
-                        total += self.color_value.get(&c2).unwrap();
+                        total += color_value.get(c2);
                     }
                     if t3 > 0 {
-                        total += self.color_value.get(&c3).unwrap();
+                        total += color_value.get(c3);
                     }
 
                     match result {
-                        Ok(_) => action_rewards.push(ActionReward::new(command, total)),
+                        Ok(_) => self.0.push(ActionReward::new(command, total)),
                         Err(_) => (),
                     };
                 }
                 ReserveStackCard(l) => {
-                    let result = GameCommand::reserve_stack_card(l, &mut user, &mut board);
+                    let result = GameCommand::reserve_stack_card(l, user, board);
                     match result {
-                        Ok(_) => action_rewards.push(ActionReward::new(command, 0.0)),
+                        Ok(_) => self.0.push(ActionReward::new(command, 0.0)),
                         Err(_) => (),
                     };
                 }
                 BuyReservedCard(index) => {
-                    let output = GameCommand::buy_reserved_card(index, &mut user, &mut board);
+                    let output = GameCommand::buy_reserved_card(index, user, board);
                     match output {
                         Ok(_) => match user.get_acquired_cards().as_slice().last() {
-                            Some(card) => action_rewards.push(ActionReward::new(
+                            Some(card) => self.0.push(ActionReward::new(
                                 command,
-                                card.get_point() as f32
-                                    + self.color_value.get(&card.get_color()).unwrap(),
+                                card.get_point() as f32 + color_value.get(card.get_color()),
                             )),
                             None => (),
                         },
@@ -172,15 +147,13 @@ impl ActionRewardTable {
                 }
             }
         }
-
-        self.entity = action_rewards;
     }
 
     fn choice(&self) -> GameCommand {
         let mut max_value = 0.0;
         let mut command = GameCommand::ReserveDevelopmentCard { x: 0, y: 0 };
 
-        for e in self.entity.iter() {
+        for e in self.0.iter() {
             // println!("{:?}", e);
             match e {
                 ActionReward { action, reward } => {
@@ -202,6 +175,7 @@ mod tests {
     use crate::game::board::Board;
     use crate::game::user::User;
     use crate::game::Game;
+    use super::ColorValue;
 
     use crate::game::card_stack::Card;
     use crate::game::color::Color::*;
@@ -211,20 +185,23 @@ mod tests {
     fn test_calc_color_value() {
         let mut game = Game::new();
         let mut board = game.copy_board();
-        let mut users = game.copy_users();
+        // let mut users = game.copy_users();
+        let mut user = User::new(1);
         let mut table = ActionRewardTable::new();
 
-        table.calc_color_value(users, board);
+        table.calc_color_value(&mut user, &mut board);
     }
 
     #[test]
     fn test_estimate() {
         let mut game = Game::new();
         let mut board = game.copy_board();
-        let mut users = game.copy_users();
+        // let mut users = game.copy_users();
+        let mut user = User::new(1);
         let mut table = ActionRewardTable::new();
+        let mut color_value = ColorValue::new();
 
-        table.estimate();
+        table.estimate(1, &mut user, &mut board, &color_value);
     }
 
     #[test]
@@ -234,6 +211,6 @@ mod tests {
         let mut users = game.copy_users();
         let mut table = ActionRewardTable::new();
 
-        table.choise();
+        table.choice();
     }
 }

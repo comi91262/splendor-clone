@@ -1,8 +1,7 @@
 use crate::game::card_stack::Card;
 use crate::game::color::Color;
 use crate::game::game_command::GameCommand;
-use crate::game::game_command::GameCommand::*;
-use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
+use crate::game::gem::{Gem, GEMS};
 use crate::game::token_stack::{Token, TokenStack};
 
 use rand::rngs::ThreadRng;
@@ -91,10 +90,10 @@ impl User {
         let jewelries = self.get_jewelries();
         let mut paid_tokens = vec![];
 
-        for color in JEWELRIES.iter() {
+        for color in GEMS.iter() {
             let cost = card.get_cost(*color);
             let number_of_token = self.get_number_of_tokens(*color);
-            let jewelry = jewelries.get_jewelry(*color);
+            let jewelry = jewelries.get_gems(*color);
             paid_tokens.append(&mut self.pay_each_tokens(cost, number_of_token, jewelry, *color));
         }
 
@@ -113,15 +112,27 @@ impl User {
     pub fn remove_card_in_hands(&mut self, order: u8) {
         self.hand.remove(order as usize);
     }
-    pub fn get_jewelries(&self) -> JewelryBox {
-        let mut jewelries = JewelryBox::new();
+    pub fn get_jewelries(&self) -> Gem {
+        let mut gems = Gem::new();
 
         for card in self.get_acquired_cards().iter() {
-            jewelries.add_jewelry(card.get_color(), card.get_point());
+            gems.add_gems(card.get_color(), card.get_point());
         }
 
-        jewelries
+        gems
     }
+
+    pub fn get_owned_gems(&self) -> Gem {
+        let mut owned = Gem::new();
+        for card in self.acquired_card.iter() {
+            for color in GEMS.iter() {
+                owned.add_gems(*color, card.get_cost(*color));
+            }
+        }
+
+        owned
+    }
+
     fn pay_each_tokens(
         &mut self,
         cost: u8,
@@ -180,7 +191,7 @@ mod tests {
         }
 
         let jewelries = user.get_jewelries();
-        assert_eq!(jewelries.get_jewelry(Black), 1)
+        assert_eq!(jewelries.get_gems(Black), 1)
     }
 
     #[test]
