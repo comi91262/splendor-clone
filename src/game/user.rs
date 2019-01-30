@@ -1,6 +1,7 @@
 use crate::game::card_stack::Card;
 use crate::game::color::Color;
-use crate::game::game_command::{to_command, GameCommand};
+use crate::game::game_command::GameCommand;
+use crate::game::game_command::GameCommand::*;
 use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
 use crate::game::token_stack::{Token, TokenStack};
 
@@ -50,7 +51,7 @@ impl User {
     }
     pub fn read(&mut self) -> GameCommand {
         let random_value = self.rng.gen::<u8>() % 45;
-        to_command(random_value)
+        GameCommand::to_command(random_value)
     }
     pub fn get_id(&self) -> u8 {
         self.id

@@ -1,6 +1,6 @@
-use self::action_reward_table::ActionRewardList;
 use self::board::Board;
 use self::game_command::GameCommand;
+use self::game_command::GameCommand::*;
 use self::user::User;
 
 use std::time::Instant;
@@ -37,7 +37,6 @@ impl Game {
         let mut sum_duration = 0;
         let mut is_over = false;
 
-        let _ = ActionRewardList::look(1, self.users[0], self.board);
         loop {
             let start = Instant::now();
             println!("{}手番目\n{}", turn, self.board);
@@ -72,6 +71,13 @@ impl Game {
         println!("ターン経過平均: {}ns", sum_duration / turn);
     }
 
+    pub fn copy_board(&mut self) -> Board {
+        self.board.clone()
+    }
+    pub fn copy_users(&mut self) -> Vec<User> {
+        self.users.clone()
+    }
+
     pub fn eval(input: GameCommand, user: &mut User, board: &mut Board) -> Result<String, String> {
         let mut input = input;
         for _ in 0..MAX_NUMBER_OF_TRIALS {
@@ -95,18 +101,17 @@ impl Game {
         user: &mut User,
         board: &mut Board,
     ) -> Result<&'static str, &'static str> {
-        use self::game_command::GameCommand::*;
-        use self::game_command::*;
-
         match input {
-            ReserveDevelopmentCard { x, y } => reserve_development_card(x, y, user, board),
-            BuyDevelopmentCard { x, y } => buy_development_card(x, y, user, board),
-            SelectTwoSameTokens(color) => select_two_same_tokens(color, user, board),
-            SelectThreeTokens(color1, color2, color3) => {
-                select_three_tokens(color1, color2, color3, user, board)
+            ReserveDevelopmentCard { x, y } => {
+                GameCommand::reserve_development_card(x, y, user, board)
             }
-            ReserveStackCard(level) => reserve_stack_card(level, user, board),
-            BuyReservedCard(index) => buy_reserved_card(index, user, board),
+            BuyDevelopmentCard { x, y } => GameCommand::buy_development_card(x, y, user, board),
+            SelectTwoSameTokens(color) => GameCommand::select_two_same_tokens(color, user, board),
+            SelectThreeTokens(color1, color2, color3) => {
+                GameCommand::select_three_tokens(color1, color2, color3, user, board)
+            }
+            ReserveStackCard(level) => GameCommand::reserve_stack_card(level, user, board),
+            BuyReservedCard(index) => GameCommand::buy_reserved_card(index, user, board),
         }
     }
 

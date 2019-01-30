@@ -3,7 +3,7 @@ use crate::game::game_command::GameCommand;
 use std::fmt;
 
 impl ActionReward {
-    fn new(action: GameCommand, reward: f32) -> ActionReward {
+    pub fn new(action: GameCommand, reward: f32) -> ActionReward {
         ActionReward {
             action: action,
             reward: reward,

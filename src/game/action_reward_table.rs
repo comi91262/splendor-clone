@@ -8,35 +8,78 @@ use crate::game::game_command::GameCommand::*;
 use crate::game::jewelry_box::{JewelryBox, JEWELRIES};
 use crate::game::user::User;
 
+mod action_reward;
+
 pub struct ActionReward {
     action: GameCommand,
     reward: f32,
 }
 
-mod action_reward;
-
-pub struct ActionRewardList {
+pub struct ActionRewardTable {
     entity: Vec<ActionReward>, // TODO to const
     color_value: HashMap<Color, f32>,
 }
 
-impl ActionRewardList {
-    pub fn new() -> ActionRewardList {
+impl ActionRewardTable {
+    pub fn new() -> ActionRewardTable {
         let mut color_value = HashMap::new();
         let colors = [Black, White, Red, Blue, Green, Gold];
         for color in colors.into_iter() {
-            color_value.insert(color, 0.0);
+            color_value.insert(&color, 0.0);
         }
 
-        ActionRewardList {
+        ActionRewardTable {
             entity: vec![],
             color_value: color_value,
         }
     }
 
-    pub fn look(step: u8, user: &User, board: &Board) -> GameCommand {
+    pub fn look(&mut self, step: u8, users: &Vec<User>, board: &Board) -> GameCommand {
+        self.calc_color_value(users, board);
+        self.estimate(users, board);
+        self.choice()
+    }
+
+    fn calc_color_value(&mut self, user: &User, board: &Board) {
+        let mut required_cost = JewelryBox::new();
+        let mut owned = JewelryBox::new();
+
+        // 基礎点 = 0.3
+        // α = 1 - 所持宝石数 / 盤面の必要な宝石数
+        for row in 0..3 {
+            for col in 0..4 {
+                if let Some(card) = board.peek_card(row, col) {
+                    for color in JEWELRIES.iter() {
+                        required_cost.add_jewelry(*color, card.get_cost(*color));
+                    }
+                }
+            }
+        }
+
+        for card in user.get_acquired_cards().iter() {
+            for color in JEWELRIES.iter() {
+                owned.add_jewelry(*color, card.get_cost(*color));
+            }
+        }
+
+        let mut max_color_value = 0.0;
+        for color in JEWELRIES.iter() {
+            let color_value = self.color_value.get_mut(color).unwrap();
+            *color_value = 0.3
+                * (1.0
+                    - owned.get_jewelry(*color) as f32 / required_cost.get_jewelry(*color) as f32);
+
+            if max_color_value <= *color_value {
+                max_color_value = *color_value;
+            }
+        }
+
+        let gold_color_value = self.color_value.get_mut(&Color::Gold).unwrap();
+        *gold_color_value = max_color_value;
+    }
+
+    pub fn estimate(&self, step: u8, user: &User, board: &Board) {
         let mut action_rewards: Vec<ActionReward> = vec![];
-        self.calc_color_value(user, board);
 
         for input in 0..45 {
             let command = GameCommand::to_command(input);
@@ -130,10 +173,14 @@ impl ActionRewardList {
             }
         }
 
+        self.entity = action_rewards;
+    }
+
+    fn choice(&self) -> GameCommand {
         let mut max_value = 0.0;
         let mut command = GameCommand::ReserveDevelopmentCard { x: 0, y: 0 };
 
-        for e in action_rewards.iter() {
+        for e in self.entity.iter() {
             // println!("{:?}", e);
             match e {
                 ActionReward { action, reward } => {
@@ -147,48 +194,11 @@ impl ActionRewardList {
 
         command
     }
-
-    fn calc_color_value(&mut self, user: &User, board: &Board) {
-        let mut required_cost = JewelryBox::new();
-        let mut owned = JewelryBox::new();
-
-        // 基礎点 = 0.3
-        // α = 1 - 所持宝石数 / 盤面の必要な宝石数
-        for row in 0..3 {
-            for col in 0..4 {
-                if let Some(card) = board.peek_card(row, col) {
-                    for color in JEWELRIES.iter() {
-                        required_cost.add_jewelry(*color, card.get_cost(*color));
-                    }
-                }
-            }
-        }
-
-        for card in user.get_acquired_cards().iter() {
-            for color in JEWELRIES.iter() {
-                owned.add_jewelry(*color, card.get_cost(*color));
-            }
-        }
-
-        let mut max_color_value = 0.0;
-        for color in JEWELRIES.iter() {
-            let color_value = self.color_value.get_mut(color).unwrap();
-            *color_value = 0.3
-                * (1.0
-                    - owned.get_jewelry(*color) as f32 / required_cost.get_jewelry(*color) as f32);
-
-            if max_color_value <= *color_value {
-                max_color_value = *color_value;
-            }
-        }
-
-        let gold_color_value = self.color_value.get_mut(&Color::Gold).unwrap();
-        *gold_color_value = max_color_value;
-    }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::ActionRewardTable;
     use crate::game::board::Board;
     use crate::game::user::User;
     use crate::game::Game;
@@ -198,13 +208,32 @@ mod tests {
     use crate::game::token_stack::{Token, TokenStack};
 
     #[test]
-    fn test_look() {
+    fn test_calc_color_value() {
         let mut game = Game::new();
-        let mut board = Board::new();
-        let mut user = User::new(1);
+        let mut board = game.copy_board();
+        let mut users = game.copy_users();
+        let mut table = ActionRewardTable::new();
 
-        let command = game.look(1, &mut user, &mut board);
+        table.calc_color_value(users, board);
+    }
 
-        println!("{}", command);
+    #[test]
+    fn test_estimate() {
+        let mut game = Game::new();
+        let mut board = game.copy_board();
+        let mut users = game.copy_users();
+        let mut table = ActionRewardTable::new();
+
+        table.estimate();
+    }
+
+    #[test]
+    fn test_choise() {
+        let mut game = Game::new();
+        let mut board = game.copy_board();
+        let mut users = game.copy_users();
+        let mut table = ActionRewardTable::new();
+
+        table.choise();
     }
 }
