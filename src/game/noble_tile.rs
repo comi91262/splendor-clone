@@ -71,9 +71,9 @@ impl NobleTile {
     pub fn get_point(&self) -> u8 {
         self.point
     }
-    pub fn can_visit(&self, jewelries: &Gem) -> bool {
+    pub fn can_visit(&self, gems: &Gem) -> bool {
         for color in GEMS.iter() {
-            if self.get_bonus(*color) > jewelries.get_gems(*color) {
+            if self.get_bonus(*color) > gems.get(*color) {
                 return false;
             }
         }

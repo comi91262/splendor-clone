@@ -93,7 +93,7 @@ impl User {
         for color in GEMS.iter() {
             let cost = card.get_cost(*color);
             let number_of_token = self.get_number_of_tokens(*color);
-            let jewelry = jewelries.get_gems(*color);
+            let jewelry = jewelries.get(*color);
             paid_tokens.append(&mut self.pay_each_tokens(cost, number_of_token, jewelry, *color));
         }
 
@@ -114,22 +114,21 @@ impl User {
     }
     pub fn get_jewelries(&self) -> Gem {
         let mut gems = Gem::new();
-
         for card in self.get_acquired_cards().iter() {
-            gems.add_gems(card.get_color(), card.get_point());
+            gems.add(card.get_color(), card.get_point());
         }
-
         gems
     }
 
     pub fn get_owned_gems(&self) -> Gem {
         let mut owned = Gem::new();
         for card in self.acquired_card.iter() {
-            for color in GEMS.iter() {
-                owned.add_gems(*color, card.get_cost(*color));
-            }
+            owned.add(card.get_color(), card.get_point())
         }
 
+        for gem in GEMS.iter() {
+            owned.add(gem.clone(), self.token_stack.len(gem.clone()))
+        }
         owned
     }
 
@@ -169,8 +168,20 @@ impl User {
 mod tests {
     use super::User;
     use crate::game::card_stack::Card;
-    use crate::game::color::Color::*;
+    use crate::game::color::Color::{self, *};
     use crate::game::token_stack::{Token, TokenStack};
+
+    fn get_user() -> User {
+        let mut user = User::new(1);
+        let cards = Card::load("json/test_card.json");
+        for card in cards.into_iter() {
+            user.acquired_card.push(card);
+        }
+        user.token_stack
+            .addn(vec![Token::new(Black), Token::new(Blue)]);
+
+        user
+    }
 
     #[test]
     fn test_new() {
@@ -184,14 +195,9 @@ mod tests {
 
     #[test]
     fn test_get_jewelries() {
-        let mut user = User::new(1);
-        let cards = Card::load("json/test_card.json");
-        for card in cards.into_iter() {
-            user.acquired_card.push(card);
-        }
-
-        let jewelries = user.get_jewelries();
-        assert_eq!(jewelries.get_gems(Black), 1)
+        let mut user = get_user();
+        let gems = user.get_jewelries();
+        assert_eq!(gems.get(Black), 1)
     }
 
     #[test]
@@ -216,6 +222,18 @@ mod tests {
             .addn(vec![Token::new(Gold), Token::new(White)]);
         let tokens = user.pay_each_tokens(3, 1, 1, White);
         assert_eq!(tokens, vec![Token::new(White), Token::new(Gold)]);
+    }
+
+    #[test]
+    fn test_get_owned_gems() {
+        let mut user = get_user();
+        let gems = user.get_owned_gems();
+
+        assert_eq!(gems.get(Black), 2);
+        assert_eq!(gems.get(White), 0);
+        assert_eq!(gems.get(Red), 0);
+        assert_eq!(gems.get(Blue), 1);
+        assert_eq!(gems.get(Green), 0);
     }
 }
 

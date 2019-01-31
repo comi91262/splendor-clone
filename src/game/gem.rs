@@ -1,13 +1,6 @@
-use crate::game::color::Color;
-use crate::game::color::Color::*;
+use crate::game::color::Color::{self, *};
 
-pub const GEMS: [Color; 5] = [
-    Color::Black,
-    Color::White,
-    Color::Red,
-    Color::Blue,
-    Color::Green,
-];
+pub const GEMS: [Color; 5] = [Black, White, Red, Blue, Green];
 pub struct Gem {
     black: u8,
     white: u8,
@@ -26,7 +19,7 @@ impl Gem {
             green: 0,
         }
     }
-    pub fn get_gems(&self, color: Color) -> u8 {
+    pub fn get(&self, color: Color) -> u8 {
         match color {
             Black => self.black,
             White => self.white,
@@ -36,17 +29,7 @@ impl Gem {
             _ => unreachable!(),
         }
     }
-    pub fn set_gems(&mut self, color: Color, gems: u8) {
-        match color {
-            Black => self.black = gems,
-            White => self.white = gems,
-            Red => self.red = gems,
-            Blue => self.blue = gems,
-            Green => self.green = gems,
-            _ => unreachable!(),
-        }
-    }
-    pub fn add_gems(&mut self, color: Color, gems: u8) {
+    pub fn add(&mut self, color: Color, gems: u8) {
         match color {
             Black => self.black += gems,
             White => self.white += gems,

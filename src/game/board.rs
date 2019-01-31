@@ -1,5 +1,6 @@
 use crate::game::card_stack::{Card, CardStack};
 use crate::game::color::Color;
+use crate::game::gem::{Gem, GEMS};
 use crate::game::level::Level;
 use crate::game::noble_tile::NobleTile;
 use crate::game::token_stack::{Token, TokenStack};
@@ -123,6 +124,17 @@ impl Board {
     pub fn get_noble_tile(&mut self) -> &mut Vec<NobleTile> {
         &mut self.noble_tile
     }
+    pub fn get_required_cost(&self) -> Gem {
+        let mut required_cost = Gem::new();
+        for (x, y) in COORDINATE.iter() {
+            if let Some(card) = self.peek_card(*x, *y) {
+                for color in GEMS.iter() {
+                    required_cost.add(*color, card.get_cost(*color));
+                }
+            }
+        }
+        required_cost
+    }
     fn get_number_of_tokens(&self, color: Color) -> u8 {
         self.token_stack.len(color)
     }
@@ -139,4 +151,52 @@ impl Board {
             None => (),
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Board;
+    use crate::game::card_stack::Card;
+    use crate::game::color::Color::{self, *};
+    use crate::game::token_stack::{Token, TokenStack};
+    use ndarray::Array2;
+
+    // TOOD mock
+    fn setup_board() {
+        // let mut board = Board {
+        //     board: Array2::<Card>::default((3, 4)),
+        //     card_stack: CardStack::new(),
+        //     token_stack: TokenStack::new().fill(),
+        //     noble_tile: NobleTile::create_stack(),
+        // };
+
+        // for (x, y) in COORDINATE.iter() {
+        //     board.refill(*x, *y);
+        // }
+
+        // board
+    }
+    //    #[test]
+    //    fn test_get_required_cost() {
+    //        let required_cost = Gem::new();
+    //        for (x, y) in COORDINATE.iter() {
+    //            if let Some(card) = self.peek_card(x, y) {
+    //                for color in GEMS.iter() {
+    //                    required_cost.add(*color, card.get_cost(*color));
+    //                }
+    //            }
+    //        }
+    //        required_cost
+    //    }
+    //    pub fn get_required_cost(&self) -> Gem {
+    //        let required_cost = Gem::new();
+    //        for (x, y) in COORDINATE.iter() {
+    //            if let Some(card) = self.peek_card(x, y) {
+    //                for color in GEMS.iter() {
+    //                    required_cost.add(*color, card.get_cost(*color));
+    //                }
+    //            }
+    //        }
+    //        required_cost
+    //    }
 }

@@ -71,15 +71,15 @@ impl Card {
         self.point
     }
     pub fn is_available(&self, user: &User) -> bool {
-        let jewelries = user.get_jewelries();
+        let gems = user.get_jewelries();
 
         let mut gold_token = user.get_number_of_tokens(Color::Gold) as i8;
 
         for color in GEMS.iter() {
             let token = user.get_number_of_tokens(*color);
-            let jewelry = jewelries.get_gems(*color);
+            let gems = gems.get(*color);
             let cost = self.get_cost(*color);
-            self.estimate_gold_token(token + jewelry, cost, &mut gold_token);
+            self.estimate_gold_token(token + gems, cost, &mut gold_token);
         }
 
         gold_token >= 0

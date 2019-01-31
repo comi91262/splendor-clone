@@ -32,36 +32,30 @@ impl ActionRewardTable {
     }
 
     fn calc_color_value(&mut self, user: &User, board: &Board) -> ColorValue {
-        let mut required_cost = Gem::new();
-        let mut owned = Gem::new();
         let mut color_value = ColorValue::new();
+
+        let required_cost = board.get_required_cost();
+        let owned = user.get_owned_gems();
 
         // 基礎点 = 0.3
         // α = 1 - 所持宝石数 / 盤面の必要な宝石数
-        for row in 0..3 {
-            for col in 0..4 {
-                if let Some(card) = board.peek_card(row, col) {
-                    for color in GEMS.iter() {
-                        required_cost.add_gems(*color, card.get_cost(*color));
-                    }
-                }
-            }
-        }
-
-        owned = user.get_owned_gems();
-
         for color in GEMS.iter() {
             color_value.set(
                 *color,
-                0.3 * (1.0 - owned.get_gems(*color) as f32 / required_cost.get_gems(*color) as f32),
+                0.3 * (1.0 - owned.get(*color) as f32 / required_cost.get(*color) as f32),
             );
         }
         color_value.set_gold_value();
-
         color_value
     }
 
-    pub fn estimate(&mut self, step: u8, user: &mut User, board: &mut Board, color_value: &ColorValue) {
+    pub fn estimate(
+        &mut self,
+        step: u8,
+        user: &mut User,
+        board: &mut Board,
+        color_value: &ColorValue,
+    ) {
         for input in 0..45 {
             let command = GameCommand::to_command(input);
             match command {
@@ -101,8 +95,7 @@ impl ActionRewardTable {
                     let t2 = user.get_number_of_tokens(c2);
                     let t3 = user.get_number_of_tokens(c3);
 
-                    let result =
-                        GameCommand::select_three_tokens(c1, c2, c3, user, board);
+                    let result = GameCommand::select_three_tokens(c1, c2, c3, user, board);
 
                     let t1 = user.get_number_of_tokens(c1) - t1;
                     let t2 = user.get_number_of_tokens(c2) - t2;
@@ -172,10 +165,10 @@ impl ActionRewardTable {
 #[cfg(test)]
 mod tests {
     use super::ActionRewardTable;
+    use super::ColorValue;
     use crate::game::board::Board;
     use crate::game::user::User;
     use crate::game::Game;
-    use super::ColorValue;
 
     use crate::game::card_stack::Card;
     use crate::game::color::Color::*;
