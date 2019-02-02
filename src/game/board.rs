@@ -33,6 +33,22 @@ pub struct Board {
     noble_tile: Vec<NobleTile>,
 }
 
+pub trait Board {
+    fn new() -> Board;
+    fn peek_card(&self, x: u8, y: u8) -> Option<&Card>;
+    fn get_card(&mut self, x: u8, y: u8) -> Option<Card>;
+    fn get_stack_card(&mut self, level: Level) -> Option<Card>;
+    fn get_noble_tile(&mut self) -> &mut Vec<NobleTile>;
+    fn get_required_cost(&self) -> Gem;
+    fn get_number_of_tokens(&self, color: Color) -> u8;
+    fn get_token_stack(&mut self) -> &mut TokenStack;
+    fn uget_card(&mut self, x: u8, y: u8) -> Card;
+    fn get_token(&mut self, color: Color) -> Option<Token>;
+    fn uget_token(&mut self, color: Color) -> Token;
+    fn can_get_token(&self, color: Color) -> bool;
+    fn refill(&mut self, x: u8, y: u8);
+}
+
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -72,8 +88,9 @@ impl fmt::Display for Board {
     }
 }
 
-impl Board {
-    pub fn new() -> Board {
+
+impl UseBoard for Board {
+    fn new() -> Board {
         let mut board = Board {
             board: Array2::<Card>::default((3, 4)),
             card_stack: CardStack::new(),
@@ -87,10 +104,10 @@ impl Board {
 
         board
     }
-    pub fn peek_card(&self, x: u8, y: u8) -> Option<&Card> {
+     fn peek_card(&self, x: u8, y: u8) -> Option<&Card> {
         self.board.get((x as usize, y as usize))
     }
-    pub fn get_card(&mut self, x: u8, y: u8) -> Option<Card> {
+     fn get_card(&mut self, x: u8, y: u8) -> Option<Card> {
         match self.board.get_mut((x as usize, y as usize)) {
             Some(card) => {
                 let card2 = card.clone();
@@ -100,31 +117,31 @@ impl Board {
             None => None,
         }
     }
-    pub fn get_stack_card(&mut self, level: Level) -> Option<Card> {
+     fn get_stack_card(&mut self, level: Level) -> Option<Card> {
         self.card_stack.get(level)
     }
-    pub fn uget_card(&mut self, x: u8, y: u8) -> Card {
+     fn uget_card(&mut self, x: u8, y: u8) -> Card {
         let card = self.board.get_mut((x as usize, y as usize)).unwrap();
         let card2 = card.clone();
         self.refill(x, y);
         card2
     }
-    pub fn get_token(&mut self, color: Color) -> Option<Token> {
+     fn get_token(&mut self, color: Color) -> Option<Token> {
         self.token_stack.remove(color)
     }
-    pub fn uget_token(&mut self, color: Color) -> Token {
+     fn uget_token(&mut self, color: Color) -> Token {
         self.token_stack.remove(color).unwrap()
     }
-    pub fn get_token_stack(&mut self) -> &mut TokenStack {
+     fn get_token_stack(&mut self) -> &mut TokenStack {
         &mut self.token_stack
     }
-    pub fn can_get_token(&self, color: Color) -> bool {
+     fn can_get_token(&self, color: Color) -> bool {
         self.get_number_of_tokens(color) >= LIMIT_OF_GETTING_SAME_TOKEN
     }
-    pub fn get_noble_tile(&mut self) -> &mut Vec<NobleTile> {
+     fn get_noble_tile(&mut self) -> &mut Vec<NobleTile> {
         &mut self.noble_tile
     }
-    pub fn get_required_cost(&self) -> Gem {
+     fn get_required_cost(&self) -> Gem {
         let mut required_cost = Gem::new();
         for (x, y) in COORDINATE.iter() {
             if let Some(card) = self.peek_card(*x, *y) {
@@ -188,7 +205,7 @@ mod tests {
     //        }
     //        required_cost
     //    }
-    //    pub fn get_required_cost(&self) -> Gem {
+    //     fn get_required_cost(&self) -> Gem {
     //        let required_cost = Gem::new();
     //        for (x, y) in COORDINATE.iter() {
     //            if let Some(card) = self.peek_card(x, y) {
