@@ -53,7 +53,7 @@ impl NobleTile {
     pub fn create_stack() -> Vec<NobleTile> {
         let mut stack = vec![];
 
-        for result in BufReader::new(File::open("json/noble_tile.json").unwrap()).lines() {
+        for result in BufReader::new(File::open("data/noble_tile.json").unwrap()).lines() {
             let l = result.unwrap();
             let tile: NobleTile = serde_json::from_str(&l).unwrap();
             stack.push(tile);

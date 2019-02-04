@@ -22,27 +22,29 @@ pub struct Card {
 pub struct CardStack(HashMap<Level, Vec<Card>>);
 
 impl CardStack {
-    pub fn new() -> CardStack {
-        let cards = Card::load("json/card.json");
-
+    pub fn new(file_path: Option<&'static str>) -> CardStack {
         let mut level1_stack = vec![];
         let mut level2_stack = vec![];
         let mut level3_stack = vec![];
-        for card in cards.into_iter() {
-            match card {
-                Card { level: 1, .. } => level1_stack.push(card),
-                Card { level: 2, .. } => level2_stack.push(card),
-                Card { level: 3, .. } => level3_stack.push(card),
-                Card { level: _, .. } => unreachable!(),
-            }
-        }
 
-        // シャッフルする
-        use rand::seq::SliceRandom;
-        let mut rng = rand::thread_rng();
-        level1_stack.shuffle(&mut rng);
-        level2_stack.shuffle(&mut rng);
-        level3_stack.shuffle(&mut rng);
+        if let Some(file_path) = file_path {
+            let cards = Card::load(file_path);
+            for card in cards.into_iter() {
+                match card {
+                    Card { level: 1, .. } => level1_stack.push(card),
+                    Card { level: 2, .. } => level2_stack.push(card),
+                    Card { level: 3, .. } => level3_stack.push(card),
+                    Card { level: _, .. } => unreachable!(),
+                }
+            }
+
+            // シャッフルする
+            use rand::seq::SliceRandom;
+            let mut rng = rand::thread_rng();
+            level1_stack.shuffle(&mut rng);
+            level2_stack.shuffle(&mut rng);
+            level3_stack.shuffle(&mut rng);
+        }
 
         let mut stack = HashMap::new();
         stack.insert(Level::One, level1_stack);

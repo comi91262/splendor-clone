@@ -173,7 +173,7 @@ mod tests {
 
     fn get_user() -> User {
         let mut user = User::new(1);
-        let cards = Card::load("json/test_card.json");
+        let cards = Card::load("data/test_card.json");
         for card in cards.into_iter() {
             user.acquired_card.push(card);
         }
